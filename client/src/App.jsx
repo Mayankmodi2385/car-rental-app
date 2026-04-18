@@ -118,7 +118,9 @@ function App() {
 
   return (
     <div className="container">
-      <h1>🚗 Car Rental Dashboard</h1>
+      <h1 className="title">
+  🚗 Car Rental Dashboard
+</h1>
 
       {/* FILTER */}
       <div className="card">

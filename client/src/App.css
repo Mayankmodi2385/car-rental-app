@@ -1,33 +1,37 @@
-/* GLOBAL */
+/* 🌙 PREMIUM BACKGROUND */
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
-  background: #f5f6fa;
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  color: #fff;
 }
 
-/* CONTAINER */
+/* 📦 CONTAINER */
 .container {
   max-width: 500px;
   margin: auto;
-  padding: 10px;
+  padding: 15px;
 }
 
-/* TITLE */
-h1 {
+/* 🧠 TITLE */
+.title {
   text-align: center;
   font-size: 22px;
+  margin-bottom: 10px;
+  font-weight: bold;
 }
 
-/* CARD */
+/* 🪄 CARD */
 .card {
-  background: white;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(10px);
   padding: 12px;
   margin: 10px 0;
-  border-radius: 12px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  border-radius: 14px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
 }
 
-/* SUMMARY */
+/* 📊 SUMMARY */
 .summary {
   display: flex;
   gap: 10px;
@@ -38,53 +42,55 @@ h1 {
   text-align: center;
 }
 
-/* FORM */
+/* ✍️ FORM */
 .form {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-/* INPUTS */
+/* 🧾 INPUTS */
 select,
 input {
   width: 100%;
   padding: 12px;
   border-radius: 10px;
-  border: 1px solid #ccc;
+  border: none;
   font-size: 14px;
-  background: #fff;
-  color: #000;
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+  outline: none;
 }
 
-/* FIX DATE INPUT (IMPORTANT 🔥) */
+/* FIX DATE VISIBILITY */
 input[type="date"] {
-  background: #fff !important;
-  color: #000 !important;
+  color: #fff;
 }
 
-/* BUTTON */
+/* ✨ BUTTON */
 button {
   padding: 12px;
   border: none;
-  border-radius: 10px;
-  background: #16a34a;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
   color: white;
   font-weight: bold;
   cursor: pointer;
+  transition: 0.3s;
 }
 
 button:hover {
-  opacity: 0.9;
+  transform: scale(1.03);
+  box-shadow: 0 4px 15px rgba(34,197,94,0.4);
 }
 
-/* EXPORT BUTTON */
+/* 📤 EXPORT BUTTON */
 button:first-of-type {
   width: 100%;
   margin-top: 10px;
 }
 
-/* TABLE */
+/* 📋 TABLE */
 .table-container {
   overflow-x: auto;
 }
@@ -92,38 +98,34 @@ button:first-of-type {
 table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 600px;
+  min-width: 650px;
 }
 
 th {
-  background: #16a34a;
+  background: linear-gradient(135deg, #16a34a, #22c55e);
   color: white;
   padding: 10px;
-  font-size: 14px;
 }
 
 td {
   padding: 8px;
-  font-size: 13px;
   text-align: center;
+  font-size: 13px;
 }
 
-/* STATUS */
+/* 🏷 STATUS BADGE */
 td:nth-child(5) {
   font-weight: bold;
+  color: #22c55e;
 }
 
-/* MOBILE RESPONSIVE */
+/* 📱 MOBILE */
 @media (max-width: 600px) {
-  h1 {
-    font-size: 18px;
-  }
-
   .summary {
     flex-direction: column;
   }
 
-  button {
-    font-size: 14px;
+  h1 {
+    font-size: 18px;
   }
 }
