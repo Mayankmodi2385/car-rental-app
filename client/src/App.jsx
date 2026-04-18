@@ -15,6 +15,7 @@ function App() {
   const [entries, setEntries] = useState([]);
   const [filterCar, setFilterCar] = useState("");
 
+  // FETCH DATA
   const fetchEntries = async () => {
     try {
       const res = await axios.get("https://car-rental-app-sdp6.onrender.com/entries");
@@ -28,10 +29,12 @@ function App() {
     fetchEntries();
   }, []);
 
+  // FORM CHANGE
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  // ADD ENTRY
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -51,6 +54,7 @@ function App() {
     }
   };
 
+  // COMPLETE
   const markComplete = async (id) => {
     try {
       await axios.put(`https://car-rental-app-sdp6.onrender.com/entries/${id}`);
@@ -60,6 +64,7 @@ function App() {
     }
   };
 
+  // UPLOAD
   const handleUpload = async (event, id) => {
     const files = event.target.files;
     const formData = new FormData();
@@ -84,10 +89,12 @@ function App() {
     }
   };
 
+  // FILTER
   const filteredEntries = filterCar
     ? entries.filter((e) => e.carName === filterCar)
     : entries;
 
+  // SUMMARY
   const totalEarnings = filteredEntries.reduce(
     (sum, e) => sum + (e.totalAmount || 0),
     0
@@ -97,6 +104,7 @@ function App() {
     (e) => e.status === "Active"
   ).length;
 
+  // EXPORT
   const exportToExcel = () => {
     const data = filteredEntries.map((e) => ({
       Car: e.carName,
@@ -118,16 +126,11 @@ function App() {
 
   return (
     <div className="container">
-      <h1 className="title">
-  🚗 Car Rental Dashboard
-</h1>
+      <h1 className="title">🚗 Car Rental Dashboard</h1>
 
       {/* FILTER */}
       <div className="card">
-        <select
-          value={filterCar}
-          onChange={(e) => setFilterCar(e.target.value)}
-        >
+        <select value={filterCar} onChange={(e) => setFilterCar(e.target.value)}>
           <option value="">All Cars</option>
           <option>Baleno</option>
           <option>Nexon</option>
@@ -142,8 +145,8 @@ function App() {
 
       {/* SUMMARY */}
       <div className="summary">
-        <div className="card">💰 Total: ₹{totalEarnings}</div>
-        <div className="card">🚗 Active: {activeCars}</div>
+        <div className="card">💰 ₹{totalEarnings}</div>
+        <div className="card">🚗 {activeCars} Active</div>
       </div>
 
       {/* FORM */}
@@ -174,89 +177,66 @@ function App() {
         </form>
       </div>
 
-      {/* TABLE */}
-      <div className="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>Car</th>
-              <th>Start</th>
-              <th>End</th>
-              <th>Total</th>
-              <th>Status</th>
-              <th>Action</th>
-              <th>Docs</th>
-            </tr>
-          </thead>
+      {/* LIST VIEW (PREMIUM) */}
+      <div className="list">
+        {filteredEntries.map((e) => (
+          <div className="entry-card" key={e._id}>
 
-          <tbody>
-            {filteredEntries.map((e) => (
-              <tr key={e._id}>
-                <td>{e.carName}</td>
-                <td>{new Date(e.startDate).toLocaleDateString()}</td>
-                <td>{new Date(e.endDate).toLocaleDateString()}</td>
-                <td>₹{e.totalAmount}</td>
+            <div className="row">
+              <span className="car">{e.carName}</span>
+              <span className="status">{e.status}</span>
+            </div>
 
-                <td>{e.status}</td>
+            <div className="row">
+              <span>📅 {new Date(e.startDate).toLocaleDateString()}</span>
+              <span>➡️ {new Date(e.endDate).toLocaleDateString()}</span>
+            </div>
 
-                {/* 🔥 MOBILE FRIENDLY ACTION */}
-                <td>
-                  <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-                    {e.status === "Active" && (
-                      <button
-                        type="button"
-                        style={{ width: "100%" }}
-                        onClick={() => markComplete(e._id)}
-                      >
-                        Complete
-                      </button>
-                    )}
+            <div className="row">
+              <span>💰 ₹{e.totalAmount}</span>
+            </div>
 
-                    <input
-                      type="file"
-                      style={{ display: "none" }}
-                      id={`file-${e._id}`}
-                      onChange={(event) => handleUpload(event, e._id)}
-                      multiple
-                    />
+            <div className="actions">
+              {e.status === "Active" && (
+                <button onClick={() => markComplete(e._id)}>
+                  Complete
+                </button>
+              )}
 
-                    <button
-                      type="button"
-                      style={{ width: "100%" }}
-                      onClick={() =>
-                        document.getElementById(`file-${e._id}`).click()
-                      }
-                    >
-                      Upload Docs
-                    </button>
-                  </div>
-                </td>
+              <button
+                onClick={() =>
+                  document.getElementById(`file-${e._id}`).click()
+                }
+              >
+                Upload Docs
+              </button>
 
-                {/* DOCS */}
-                <td>
-                  {e.aadhar ? (
-                    <a href={`https://car-rental-app-sdp6.onrender.com/uploads/${e.aadhar}`} target="_blank">
-                      📄 Aadhar
-                    </a>
-                  ) : (
-                    "No Aadhar"
-                  )}
+              <input
+                type="file"
+                style={{ display: "none" }}
+                id={`file-${e._id}`}
+                onChange={(event) => handleUpload(event, e._id)}
+                multiple
+              />
+            </div>
 
-                  <br />
+            <div className="docs">
+              {e.aadhar && (
+                <a href={`https://car-rental-app-sdp6.onrender.com/uploads/${e.aadhar}`} target="_blank" rel="noreferrer">
+                  📄 Aadhar
+                </a>
+              )}
+              {e.license && (
+                <a href={`https://car-rental-app-sdp6.onrender.com/uploads/${e.license}`} target="_blank" rel="noreferrer">
+                  🚗 License
+                </a>
+              )}
+            </div>
 
-                  {e.license ? (
-                    <a href={`https://car-rental-app-sdp6.onrender.com/uploads/${e.license}`} target="_blank">
-                      🚗 License
-                    </a>
-                  ) : (
-                    "No License"
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+          </div>
+        ))}
       </div>
+
     </div>
   );
 }
