@@ -1,87 +1,129 @@
+/* GLOBAL */
 body {
   margin: 0;
-  font-family: "Inter", sans-serif;
-  background: #f1f5f9;
+  font-family: Arial, sans-serif;
+  background: #f5f6fa;
 }
 
 /* CONTAINER */
 .container {
-  max-width: 420px;
+  max-width: 500px;
   margin: auto;
-  padding: 12px;
+  padding: 10px;
 }
 
-/* HEADER */
+/* TITLE */
 h1 {
-  font-size: 20px;
   text-align: center;
-  margin-bottom: 10px;
+  font-size: 22px;
 }
 
 /* CARD */
 .card {
   background: white;
   padding: 12px;
-  margin: 8px 0;
+  margin: 10px 0;
   border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+/* SUMMARY */
+.summary {
+  display: flex;
+  gap: 10px;
+}
+
+.summary .card {
+  flex: 1;
+  text-align: center;
 }
 
 /* FORM */
 .form {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
-select, input {
+/* INPUTS */
+select,
+input {
+  width: 100%;
   padding: 12px;
-  border-radius: 8px;
-  border: 1px solid #ddd;
+  border-radius: 10px;
+  border: 1px solid #ccc;
   font-size: 14px;
+  background: #fff;
+  color: #000;
+}
+
+/* FIX DATE INPUT (IMPORTANT 🔥) */
+input[type="date"] {
+  background: #fff !important;
+  color: #000 !important;
 }
 
 /* BUTTON */
 button {
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
   background: #16a34a;
   color: white;
-  border: none;
-  padding: 12px;
-  border-radius: 8px;
-  font-size: 14px;
-  margin-top: 5px;
+  font-weight: bold;
+  cursor: pointer;
 }
 
-/* TABLE SCROLL */
+button:hover {
+  opacity: 0.9;
+}
+
+/* EXPORT BUTTON */
+button:first-of-type {
+  width: 100%;
+  margin-top: 10px;
+}
+
+/* TABLE */
 .table-container {
   overflow-x: auto;
 }
 
-/* TABLE */
 table {
   width: 100%;
-  background: white;
   border-collapse: collapse;
-  border-radius: 10px;
-  overflow: hidden;
+  min-width: 600px;
 }
 
 th {
   background: #16a34a;
   color: white;
-  font-size: 12px;
+  padding: 10px;
+  font-size: 14px;
 }
 
-th, td {
+td {
   padding: 8px;
+  font-size: 13px;
   text-align: center;
-  font-size: 12px;
-  border-bottom: 1px solid #eee;
 }
 
-/* SUMMARY */
-.summary {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+/* STATUS */
+td:nth-child(5) {
+  font-weight: bold;
+}
+
+/* MOBILE RESPONSIVE */
+@media (max-width: 600px) {
+  h1 {
+    font-size: 18px;
+  }
+
+  .summary {
+    flex-direction: column;
+  }
+
+  button {
+    font-size: 14px;
+  }
 }
