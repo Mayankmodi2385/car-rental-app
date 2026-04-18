@@ -17,7 +17,7 @@ function App() {
 
   const fetchEntries = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/entries");
+      const res = await axios.get("https://car-rental-app-sdp6.onrender.com/entries");
       setEntries(res.data);
     } catch (err) {
       console.error(err);
@@ -35,7 +35,7 @@ function App() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post("http://localhost:5000/entries", form);
+      await axios.post("https://car-rental-app-sdp6.onrender.com/entries", form);
       alert("Entry Added ✅");
 
       setForm({
@@ -53,7 +53,7 @@ function App() {
 
   const markComplete = async (id) => {
     try {
-      await axios.put(`http://localhost:5000/entries/${id}`);
+      await axios.put(`https://car-rental-app-sdp6.onrender.com/entries/${id}`);
       fetchEntries();
     } catch (err) {
       console.error(err);
@@ -69,7 +69,7 @@ function App() {
 
     try {
       await axios.put(
-        `http://localhost:5000/entries/upload/${id}`,
+        `https://car-rental-app-sdp6.onrender.com/entries/upload/${id}`,
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },
@@ -233,7 +233,7 @@ function App() {
                 {/* DOCS */}
                 <td>
                   {e.aadhar ? (
-                    <a href={`http://localhost:5000/uploads/${e.aadhar}`} target="_blank">
+                    <a href={`https://car-rental-app-sdp6.onrender.com/uploads/${e.aadhar}`} target="_blank">
                       📄 Aadhar
                     </a>
                   ) : (
@@ -243,7 +243,7 @@ function App() {
                   <br />
 
                   {e.license ? (
-                    <a href={`http://localhost:5000/uploads/${e.license}`} target="_blank">
+                    <a href={`https://car-rental-app-sdp6.onrender.com/uploads/${e.license}`} target="_blank">
                       🚗 License
                     </a>
                   ) : (
