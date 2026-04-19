@@ -9,6 +9,9 @@ const fs = require("fs");
 // 🔥 DEFINE UPLOAD DIR (SINGLE SOURCE)
 const uploadDir = path.join(__dirname, "../uploads");
 
+// DEBUG
+console.log("Saving files to:", uploadDir);
+
 // 🔥 CREATE IF NOT EXISTS
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
