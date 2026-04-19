@@ -234,7 +234,7 @@ function App() {
 
             <div className="docs">
               {e.aadhar ? (
-                <a href={`${API}/uploads/${e.aadhar}`} target="_blank" rel="noreferrer">
+                <a href={e.aadhar} target="_blank" rel="noreferrer">
                   📄 View Aadhar
                 </a>
               ) : <span>📄 No Aadhar</span>}
@@ -242,7 +242,7 @@ function App() {
               <br />
 
               {e.license ? (
-                <a href={`${API}/uploads/${e.license}`} target="_blank" rel="noreferrer">
+                <a href={e.license} target="_blank" rel="noreferrer">
                   🚗 View License
                 </a>
               ) : <span>🚗 No License</span>}

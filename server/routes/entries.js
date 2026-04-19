@@ -18,14 +18,17 @@ if (!fs.existsSync(uploadDir)) {
 }
 
 // 📂 STORAGE CONFIG
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, uploadDir); // 🔥 use same variable
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + "-" + file.originalname);
+const cloudinary = require("../config/cloudinary");
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
+
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: "car-rental",
+    allowed_formats: ["jpg", "png", "jpeg"],
   },
 });
+
 
 const upload = multer({ storage });
 
@@ -56,8 +59,8 @@ router.post(
         totalAmount,
         status: "Active",
 
-        aadhar: req.files?.aadhar?.[0]?.filename || null,
-        license: req.files?.license?.[0]?.filename || null,
+        aadhar: req.files?.aadhar?.[0]?.path || null,
+        license: req.files?.license?.[0]?.path || null,
       });
 
       res.json(entry);
@@ -113,11 +116,11 @@ router.put(
       const updateData = {};
 
       if (req.files?.aadhar) {
-        updateData.aadhar = req.files.aadhar[0].filename;
+        updateData.aadhar = req.files.aadhar[0].path;
       }
 
       if (req.files?.license) {
-        updateData.license = req.files.license[0].filename;
+        updateData.license = req.files.license[0].path;
       }
 
       const updated = await Entry.findByIdAndUpdate(
