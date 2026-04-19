@@ -65,22 +65,24 @@ function App() {
     }
   };
 
-  // UPLOAD
-  const handleUpload = async (event, id) => {
-    const files = event.target.files;
+  // 🔥 UPDATED UPLOAD FUNCTION
+  const handleUpload = async (event, id, type) => {
+    const file = event.target.files[0];
     const formData = new FormData();
 
-    if (files[0]) formData.append("aadhar", files[0]);
-    if (files[1]) formData.append("license", files[1]);
+    if (file) {
+      formData.append(type, file);
+    }
 
     try {
       await axios.put(`${API}/entries/upload/${id}`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      alert("Documents Uploaded ✅");
+      alert(`${type} uploaded ✅`);
       fetchEntries();
-    } catch {
+    } catch (err) {
+      console.error(err);
       alert("Upload failed ❌");
     }
   };
@@ -193,25 +195,41 @@ function App() {
             </div>
 
             <div className="actions">
+
               {e.status === "Active" && (
                 <button onClick={() => markComplete(e._id)}>
                   Complete
                 </button>
               )}
 
+              {/* AADHAR */}
               <button onClick={() =>
-                document.getElementById(`file-${e._id}`).click()
+                document.getElementById(`aadhar-${e._id}`).click()
               }>
-                Upload Docs
+                📄 Upload Aadhar
               </button>
 
               <input
                 type="file"
+                id={`aadhar-${e._id}`}
                 style={{ display: "none" }}
-                id={`file-${e._id}`}
-                onChange={(event) => handleUpload(event, e._id)}
-                multiple
+                onChange={(event) => handleUpload(event, e._id, "aadhar")}
               />
+
+              {/* LICENSE */}
+              <button onClick={() =>
+                document.getElementById(`license-${e._id}`).click()
+              }>
+                🚗 Upload License
+              </button>
+
+              <input
+                type="file"
+                id={`license-${e._id}`}
+                style={{ display: "none" }}
+                onChange={(event) => handleUpload(event, e._id, "license")}
+              />
+
             </div>
 
             <div className="docs">
@@ -219,7 +237,7 @@ function App() {
                 <a href={`${API}/uploads/${e.aadhar}`} target="_blank" rel="noreferrer">
                   📄 View Aadhar
                 </a>
-              ) : <span>No Aadhar</span>}
+              ) : <span>📄 No Aadhar</span>}
 
               <br />
 
@@ -227,7 +245,7 @@ function App() {
                 <a href={`${API}/uploads/${e.license}`} target="_blank" rel="noreferrer">
                   🚗 View License
                 </a>
-              ) : <span>No License</span>}
+              ) : <span>🚗 No License</span>}
             </div>
 
           </div>
