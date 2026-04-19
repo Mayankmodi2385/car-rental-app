@@ -3,11 +3,20 @@ const router = express.Router();
 const Entry = require("../models/Entry");
 
 const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
 
-// 📂 STORAGE CONFIG
+// 🔥 CREATE UPLOAD FOLDER SAFELY
+const uploadDir = path.join(__dirname, "../uploads");
+
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+// 📂 STORAGE CONFIG (FIXED)
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "uploads/");
+    cb(null, uploadDir);
   },
   filename: function (req, file, cb) {
     cb(null, Date.now() + "-" + file.originalname);
@@ -16,7 +25,9 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-// 🚀 CREATE ENTRY (WITH FILE UPLOAD)
+/* ===========================
+   CREATE ENTRY
+=========================== */
 router.post(
   "/",
   upload.fields([
@@ -41,38 +52,34 @@ router.post(
         totalAmount,
         status: "Active",
 
-        // ✅ SAFE FILE HANDLING
-        aadhar:
-          req.files && req.files.aadhar
-            ? req.files.aadhar[0].filename
-            : null,
-
-        license:
-          req.files && req.files.license
-            ? req.files.license[0].filename
-            : null,
+        aadhar: req.files?.aadhar?.[0]?.filename || null,
+        license: req.files?.license?.[0]?.filename || null,
       });
 
       res.json(entry);
     } catch (err) {
-      console.error(err);
+      console.error("CREATE ERROR:", err);
       res.status(500).json({ message: "Error creating entry" });
     }
   }
 );
 
-// 📥 GET ALL ENTRIES
+/* ===========================
+   GET ALL ENTRIES
+=========================== */
 router.get("/", async (req, res) => {
   try {
     const data = await Entry.find().sort({ startDate: -1 });
     res.json(data);
   } catch (err) {
-    console.error(err);
+    console.error("FETCH ERROR:", err);
     res.status(500).json({ message: "Error fetching entries" });
   }
 });
 
-// ✅ MARK COMPLETE
+/* ===========================
+   MARK COMPLETE
+=========================== */
 router.put("/:id", async (req, res) => {
   try {
     const updated = await Entry.findByIdAndUpdate(
@@ -83,12 +90,14 @@ router.put("/:id", async (req, res) => {
 
     res.json(updated);
   } catch (err) {
-    console.error(err);
+    console.error("STATUS ERROR:", err);
     res.status(500).json({ message: "Error updating status" });
   }
 });
 
-// 📤 UPLOAD DOCUMENTS (FROM TABLE BUTTON)
+/* ===========================
+   UPLOAD DOCUMENTS
+=========================== */
 router.put(
   "/upload/:id",
   upload.fields([
@@ -115,7 +124,7 @@ router.put(
 
       res.json(updated);
     } catch (err) {
-      console.error(err);
+      console.error("UPLOAD ERROR:", err);
       res.status(500).json({ message: "Upload error" });
     }
   }
