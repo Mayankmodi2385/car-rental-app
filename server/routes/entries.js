@@ -93,7 +93,7 @@ router.put("/:id", async (req, res) => {
 });
 
 /* ===========================
-   UPLOAD DOCUMENTS
+   UPLOAD DOCUMENTS (FIXED)
 =========================== */
 router.put(
   "/upload/:id",
@@ -103,7 +103,9 @@ router.put(
   ]),
   async (req, res) => {
     try {
-        console.log("FILES:", req.files);
+
+      // 🔥 DEBUG (VERY IMPORTANT)
+      console.log("FILES:", req.files);
 
       const updateData = {};
 
