@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const Entry = require("../models/Entry");
+const auth = require("../middleware/auth");
 
 const multer = require("multer");
 const cloudinary = require("../config/cloudinary");
@@ -13,7 +14,7 @@ const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
     folder: "car-rental",
-    resource_type: "image", // 🔥 IMPORTANT
+    resource_type: "image",
     allowed_formats: ["jpg", "png", "jpeg"],
   },
 });
@@ -21,10 +22,11 @@ const storage = new CloudinaryStorage({
 const upload = multer({ storage });
 
 /* ===========================
-   CREATE ENTRY
+   CREATE ENTRY (PROTECTED)
 =========================== */
 router.post(
   "/",
+  auth, // 🔥 PROTECT ROUTE
   upload.fields([
     { name: "aadhar", maxCount: 1 },
     { name: "license", maxCount: 1 },
@@ -62,9 +64,9 @@ router.post(
 );
 
 /* ===========================
-   GET ALL ENTRIES
+   GET ALL ENTRIES (PROTECTED)
 =========================== */
-router.get("/", async (req, res) => {
+router.get("/", auth, async (req, res) => {
   try {
     const data = await Entry.find().sort({ startDate: -1 });
     res.json(data);
@@ -75,9 +77,9 @@ router.get("/", async (req, res) => {
 });
 
 /* ===========================
-   MARK COMPLETE
+   MARK COMPLETE (PROTECTED)
 =========================== */
-router.put("/:id", async (req, res) => {
+router.put("/:id", auth, async (req, res) => {
   try {
     const updated = await Entry.findByIdAndUpdate(
       req.params.id,
@@ -93,18 +95,17 @@ router.put("/:id", async (req, res) => {
 });
 
 /* ===========================
-   UPLOAD DOCUMENTS (FIXED)
+   UPLOAD DOCUMENTS (PROTECTED)
 =========================== */
 router.put(
   "/upload/:id",
+  auth, // 🔥 PROTECT ROUTE
   upload.fields([
     { name: "aadhar", maxCount: 1 },
     { name: "license", maxCount: 1 },
   ]),
   async (req, res) => {
     try {
-
-      // 🔥 DEBUG (VERY IMPORTANT)
       console.log("FILES:", req.files);
 
       const updateData = {};

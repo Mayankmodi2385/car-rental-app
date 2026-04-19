@@ -1,3 +1,4 @@
+import Login from "./Login";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import "./App.css";
@@ -14,13 +15,16 @@ function App() {
 
   const [entries, setEntries] = useState([]);
   const [filterCar, setFilterCar] = useState("");
+  const [token, setToken] = useState(localStorage.getItem("token"));
 
   const API = "https://car-rental-app-sdp6.onrender.com";
 
   // FETCH
   const fetchEntries = async () => {
     try {
-      const res = await axios.get(`${API}/entries`);
+      const res = await axios.get(`${API}/entries`, {
+        headers: { Authorization: token },
+      });
       setEntries(res.data);
     } catch (err) {
       console.error(err);
@@ -39,7 +43,10 @@ function App() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post(`${API}/entries`, form);
+      await axios.post(`${API}/entries`, form, {
+        headers: { Authorization: token },
+      });
+
       alert("Entry Added ✅");
 
       setForm({
@@ -58,14 +65,16 @@ function App() {
   // COMPLETE
   const markComplete = async (id) => {
     try {
-      await axios.put(`${API}/entries/${id}`);
+      await axios.put(`${API}/entries/${id}`, {}, {
+        headers: { Authorization: token },
+      });
       fetchEntries();
     } catch (err) {
       console.error(err);
     }
   };
 
-  // 🔥 UPDATED UPLOAD FUNCTION
+  // UPLOAD
   const handleUpload = async (event, id, type) => {
     const file = event.target.files[0];
     const formData = new FormData();
@@ -75,10 +84,16 @@ function App() {
     }
 
     try {
-      await axios.put(`https://car-rental-app-sdp6.onrender.com/entries/upload/${id}`,
-      formData,{
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      await axios.put(
+        `${API}/entries/upload/${id}`,
+        formData,
+        {
+          headers: {
+            Authorization: token,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
 
       alert(`${type} uploaded ✅`);
       fetchEntries();
@@ -122,6 +137,11 @@ function App() {
 
     saveAs(file, "Car_Report.xlsx");
   };
+
+  // LOGIN PROTECTION
+  if (!token) {
+    return <Login setToken={setToken} />;
+  }
 
   return (
     <div className="container">
@@ -180,7 +200,6 @@ function App() {
       <div className="list">
         {filteredEntries.map((e) => (
           <div className="entry-card" key={e._id}>
-
             <div className="row">
               <span className="car">{e.carName}</span>
               <span className="status">{e.status}</span>
@@ -196,14 +215,12 @@ function App() {
             </div>
 
             <div className="actions">
-
               {e.status === "Active" && (
                 <button onClick={() => markComplete(e._id)}>
                   Complete
                 </button>
               )}
 
-              {/* AADHAR */}
               <button onClick={() =>
                 document.getElementById(`aadhar-${e._id}`).click()
               }>
@@ -217,7 +234,6 @@ function App() {
                 onChange={(event) => handleUpload(event, e._id, "aadhar")}
               />
 
-              {/* LICENSE */}
               <button onClick={() =>
                 document.getElementById(`license-${e._id}`).click()
               }>
@@ -230,7 +246,6 @@ function App() {
                 style={{ display: "none" }}
                 onChange={(event) => handleUpload(event, e._id, "license")}
               />
-
             </div>
 
             <div className="docs">
@@ -248,11 +263,9 @@ function App() {
                 </a>
               ) : <span>🚗 No License</span>}
             </div>
-
           </div>
         ))}
       </div>
-
     </div>
   );
 }
