@@ -6,17 +6,18 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 
-// 🔥 CREATE UPLOAD FOLDER SAFELY
+// 🔥 DEFINE UPLOAD DIR (SINGLE SOURCE)
 const uploadDir = path.join(__dirname, "../uploads");
 
+// 🔥 CREATE IF NOT EXISTS
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
 
-// 📂 STORAGE CONFIG (FIXED)
+// 📂 STORAGE CONFIG
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, path.join(__dirname, "../uploads"));
+    cb(null, uploadDir); // 🔥 use same variable
   },
   filename: function (req, file, cb) {
     cb(null, Date.now() + "-" + file.originalname);
