@@ -3,32 +3,20 @@ const router = express.Router();
 const Entry = require("../models/Entry");
 
 const multer = require("multer");
-const path = require("path");
-const fs = require("fs");
-
-// 🔥 DEFINE UPLOAD DIR (SINGLE SOURCE)
-const uploadDir = path.join(__dirname, "../uploads");
-
-// DEBUG
-console.log("Saving files to:", uploadDir);
-
-// 🔥 CREATE IF NOT EXISTS
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-// 📂 STORAGE CONFIG
 const cloudinary = require("../config/cloudinary");
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
 
+/* ===========================
+   CLOUDINARY STORAGE CONFIG
+=========================== */
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
     folder: "car-rental",
+    resource_type: "image", // 🔥 IMPORTANT
     allowed_formats: ["jpg", "png", "jpeg"],
   },
 });
-
 
 const upload = multer({ storage });
 
@@ -43,6 +31,8 @@ router.post(
   ]),
   async (req, res) => {
     try {
+      console.log("FILES:", req.files);
+
       const { carName, startDate, endDate, pricePerDay } = req.body;
 
       const days =
@@ -113,6 +103,8 @@ router.put(
   ]),
   async (req, res) => {
     try {
+        console.log("FILES:", req.files);
+
       const updateData = {};
 
       if (req.files?.aadhar) {

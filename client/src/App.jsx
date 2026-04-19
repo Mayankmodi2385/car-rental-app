@@ -75,7 +75,8 @@ function App() {
     }
 
     try {
-      await axios.put(`${API}/entries/upload/${id}`, formData, {
+      await axios.put(`https://car-rental-app-sdp6.onrender.com/entries/upload/${id}`,
+      formData,{
         headers: { "Content-Type": "multipart/form-data" },
       });
 
