@@ -182,6 +182,77 @@ function App() {
         {filteredEntries.map((e) => (
           <div className="entry-card" key={e._id}>
 
+  {/* TOP ROW */}
+  <div className="row">
+    <span className="car">{e.carName}</span>
+    <span className="status">{e.status}</span>
+  </div>
+
+  {/* DATE */}
+  <div className="row">
+    <span>📅 {new Date(e.startDate).toLocaleDateString()}</span>
+    <span>➡️ {new Date(e.endDate).toLocaleDateString()}</span>
+  </div>
+
+  {/* PRICE */}
+  <div className="row">
+    <span>💰 ₹{e.totalAmount}</span>
+  </div>
+
+  {/* ACTIONS */}
+  <div className="actions">
+    {e.status === "Active" && (
+      <button onClick={() => markComplete(e._id)}>
+        Complete
+      </button>
+    )}
+
+    <button
+      onClick={() =>
+        document.getElementById(`file-${e._id}`).click()
+      }
+    >
+      Upload Docs
+    </button>
+
+    <input
+      type="file"
+      style={{ display: "none" }}
+      id={`file-${e._id}`}
+      onChange={(event) => handleUpload(event, e._id)}
+      multiple
+    />
+  </div>
+
+  {/* 🔥 DOCS SECTION (THIS WAS MISSING) */}
+  <div className="docs">
+    {e.aadhar ? (
+      <a
+        href={`https://car-rental-app-sdp6.onrender.com/uploads/${e.aadhar}`}
+        target="_blank"
+        rel="noreferrer"
+      >
+        📄 View Aadhar
+      </a>
+    ) : (
+      <span>No Aadhar</span>
+    )}
+
+    <br />
+
+    {e.license ? (
+      <a
+        href={`https://car-rental-app-sdp6.onrender.com/uploads/${e.license}`}
+        target="_blank"
+        rel="noreferrer"
+      >
+        🚗 View License
+      </a>
+    ) : (
+      <span>No License</span>
+    )}
+  </div>
+
             <div className="row">
               <span className="car">{e.carName}</span>
               <span className="status">{e.status}</span>
