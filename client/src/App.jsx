@@ -15,10 +15,12 @@ function App() {
   const [entries, setEntries] = useState([]);
   const [filterCar, setFilterCar] = useState("");
 
-  // FETCH DATA
+  const API = "https://car-rental-app-sdp6.onrender.com";
+
+  // FETCH
   const fetchEntries = async () => {
     try {
-      const res = await axios.get("https://car-rental-app-sdp6.onrender.com/entries");
+      const res = await axios.get(`${API}/entries`);
       setEntries(res.data);
     } catch (err) {
       console.error(err);
@@ -29,16 +31,15 @@ function App() {
     fetchEntries();
   }, []);
 
-  // FORM CHANGE
+  // FORM
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // ADD ENTRY
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post("https://car-rental-app-sdp6.onrender.com/entries", form);
+      await axios.post(`${API}/entries`, form);
       alert("Entry Added ✅");
 
       setForm({
@@ -49,7 +50,7 @@ function App() {
       });
 
       fetchEntries();
-    } catch (err) {
+    } catch {
       alert("Error adding entry ❌");
     }
   };
@@ -57,7 +58,7 @@ function App() {
   // COMPLETE
   const markComplete = async (id) => {
     try {
-      await axios.put(`https://car-rental-app-sdp6.onrender.com/entries/${id}`);
+      await axios.put(`${API}/entries/${id}`);
       fetchEntries();
     } catch (err) {
       console.error(err);
@@ -73,18 +74,13 @@ function App() {
     if (files[1]) formData.append("license", files[1]);
 
     try {
-      await axios.put(
-        `https://car-rental-app-sdp6.onrender.com/entries/upload/${id}`,
-        formData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        }
-      );
+      await axios.put(`${API}/entries/upload/${id}`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
 
       alert("Documents Uploaded ✅");
       fetchEntries();
-    } catch (err) {
-      console.error(err);
+    } catch {
       alert("Upload failed ❌");
     }
   };
@@ -177,81 +173,10 @@ function App() {
         </form>
       </div>
 
-      {/* LIST VIEW (PREMIUM) */}
+      {/* LIST */}
       <div className="list">
         {filteredEntries.map((e) => (
           <div className="entry-card" key={e._id}>
-
-  {/* TOP ROW */}
-  <div className="row">
-    <span className="car">{e.carName}</span>
-    <span className="status">{e.status}</span>
-  </div>
-
-  {/* DATE */}
-  <div className="row">
-    <span>📅 {new Date(e.startDate).toLocaleDateString()}</span>
-    <span>➡️ {new Date(e.endDate).toLocaleDateString()}</span>
-  </div>
-
-  {/* PRICE */}
-  <div className="row">
-    <span>💰 ₹{e.totalAmount}</span>
-  </div>
-
-  {/* ACTIONS */}
-  <div className="actions">
-    {e.status === "Active" && (
-      <button onClick={() => markComplete(e._id)}>
-        Complete
-      </button>
-    )}
-
-    <button
-      onClick={() =>
-        document.getElementById(`file-${e._id}`).click()
-      }
-    >
-      Upload Docs
-    </button>
-
-    <input
-      type="file"
-      style={{ display: "none" }}
-      id={`file-${e._id}`}
-      onChange={(event) => handleUpload(event, e._id)}
-      multiple
-    />
-  </div>
-
-  {/* 🔥 DOCS SECTION (THIS WAS MISSING) */}
-  <div className="docs">
-    {e.aadhar ? (
-      <a
-        href={`https://car-rental-app-sdp6.onrender.com/uploads/${e.aadhar}`}
-        target="_blank"
-        rel="noreferrer"
-      >
-        📄 View Aadhar
-      </a>
-    ) : (
-      <span>No Aadhar</span>
-    )}
-
-    <br />
-
-    {e.license ? (
-      <a
-        href={`https://car-rental-app-sdp6.onrender.com/uploads/${e.license}`}
-        target="_blank"
-        rel="noreferrer"
-      >
-        🚗 View License
-      </a>
-    ) : (
-      <span>No License</span>
-    )}
-  </div>
 
             <div className="row">
               <span className="car">{e.carName}</span>
@@ -274,11 +199,9 @@ function App() {
                 </button>
               )}
 
-              <button
-                onClick={() =>
-                  document.getElementById(`file-${e._id}`).click()
-                }
-              >
+              <button onClick={() =>
+                document.getElementById(`file-${e._id}`).click()
+              }>
                 Upload Docs
               </button>
 
@@ -292,16 +215,19 @@ function App() {
             </div>
 
             <div className="docs">
-              {e.aadhar && (
-                <a href={`https://car-rental-app-sdp6.onrender.com/uploads/${e.aadhar}`} target="_blank" rel="noreferrer">
-                  📄 Aadhar
+              {e.aadhar ? (
+                <a href={`${API}/uploads/${e.aadhar}`} target="_blank" rel="noreferrer">
+                  📄 View Aadhar
                 </a>
-              )}
-              {e.license && (
-                <a href={`https://car-rental-app-sdp6.onrender.com/uploads/${e.license}`} target="_blank" rel="noreferrer">
-                  🚗 License
+              ) : <span>No Aadhar</span>}
+
+              <br />
+
+              {e.license ? (
+                <a href={`${API}/uploads/${e.license}`} target="_blank" rel="noreferrer">
+                  🚗 View License
                 </a>
-              )}
+              ) : <span>No License</span>}
             </div>
 
           </div>

@@ -117,3 +117,33 @@ button {
   color: #38bdf8;
   margin-right: 10px;
 }
+.docs {
+  margin-top: 12px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* 🔥 BUTTON STYLE LINKS */
+.docs a {
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+  font-size: 12px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: 0.2s;
+}
+
+/* HOVER EFFECT */
+.docs a:hover {
+  background: rgba(56, 189, 248, 0.3);
+  transform: scale(1.05);
+}
+
+/* NO DOC TEXT */
+.docs span {
+  font-size: 12px;
+  opacity: 0.6;
+}
