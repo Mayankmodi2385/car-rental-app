@@ -18,6 +18,7 @@ app.use("/cars", carRoutes);
 app.use("/entries", entryRoutes);
 app.use("/uploads", express.static("uploads"));
 
+
 // Connect MongoDB
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB Connected"))
