@@ -1,3 +1,4 @@
+const [previewImage, setPreviewImage] = useState(null);
 import Login from "./Login";
 import { useEffect, useState } from "react";
 import axios from "axios";
