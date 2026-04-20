@@ -1,4 +1,3 @@
-const [previewImage, setPreviewImage] = useState(null);
 import Login from "./Login";
 import { useEffect, useState } from "react";
 import axios from "axios";
@@ -17,6 +16,9 @@ function App() {
   const [entries, setEntries] = useState([]);
   const [filterCar, setFilterCar] = useState("");
   const [token, setToken] = useState(localStorage.getItem("token"));
+
+  // 🔥 NEW (PREVIEW STATE)
+  const [previewImage, setPreviewImage] = useState(null);
 
   const API = "https://car-rental-app-sdp6.onrender.com";
 
@@ -85,16 +87,12 @@ function App() {
     }
 
     try {
-      await axios.put(
-        `${API}/entries/upload/${id}`,
-        formData,
-        {
-          headers: {
-            Authorization: token,
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+      await axios.put(`${API}/entries/upload/${id}`, formData, {
+        headers: {
+          Authorization: token,
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
       alert(`${type} uploaded ✅`);
       fetchEntries();
@@ -102,6 +100,15 @@ function App() {
       console.error(err);
       alert("Upload failed ❌");
     }
+  };
+
+  // 🔥 PREVIEW HANDLERS
+  const openPreview = (url) => {
+    setPreviewImage(url);
+  };
+
+  const closePreview = () => {
+    setPreviewImage(null);
   };
 
   // FILTER
@@ -201,6 +208,7 @@ function App() {
       <div className="list">
         {filteredEntries.map((e) => (
           <div className="entry-card" key={e._id}>
+
             <div className="row">
               <span className="car">{e.carName}</span>
               <span className="status">{e.status}</span>
@@ -216,6 +224,7 @@ function App() {
             </div>
 
             <div className="actions">
+
               {e.status === "Active" && (
                 <button onClick={() => markComplete(e._id)}>
                   Complete
@@ -247,26 +256,40 @@ function App() {
                 style={{ display: "none" }}
                 onChange={(event) => handleUpload(event, e._id, "license")}
               />
+
             </div>
 
+            {/* 🔥 UPDATED DOC VIEW */}
             <div className="docs">
               {e.aadhar ? (
-                <a href={e.aadhar} target="_blank" rel="noreferrer">
+                <button onClick={() => openPreview(e.aadhar)}>
                   📄 View Aadhar
-                </a>
+                </button>
               ) : <span>📄 No Aadhar</span>}
 
               <br />
 
               {e.license ? (
-                <a href={e.license} target="_blank" rel="noreferrer">
+                <button onClick={() => openPreview(e.license)}>
                   🚗 View License
-                </a>
+                </button>
               ) : <span>🚗 No License</span>}
             </div>
+
           </div>
         ))}
       </div>
+
+      {/* 🔥 MODAL */}
+      {previewImage && (
+        <div className="modal-overlay" onClick={closePreview}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <span className="close-btn" onClick={closePreview}>✖</span>
+            <img src={previewImage} alt="Preview" />
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
