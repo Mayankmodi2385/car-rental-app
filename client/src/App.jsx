@@ -232,10 +232,14 @@ function App() {
         </form>
       </div>
 
-      {/* LIST */}
-      <div className="list">
-        {filteredEntries.map((e) => (
-          <div className="entry-card" key={e._id}>
+     {/* LIST */}
+<div className="list">
+  {filteredEntries.map((e, index) => (
+    <div
+      className="entry-card"
+      style={{ animationDelay: `${index * 0.1}s` }}
+      key={e._id}
+    >
 
             <div className="row">
               <span className="car">{e.carName}</span>
