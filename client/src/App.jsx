@@ -280,15 +280,26 @@ function App() {
         ))}
       </div>
 
-      {/* 🔥 MODAL */}
       {previewImage && (
-        <div className="modal-overlay" onClick={closePreview}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <span className="close-btn" onClick={closePreview}>✖</span>
-            <img src={previewImage} alt="Preview" />
-          </div>
-        </div>
-      )}
+  <div className="modal-overlay" onClick={closePreview}>
+    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+
+      {/* ❌ CLOSE */}
+      <span className="close-btn" onClick={closePreview}>✖</span>
+
+      {/* 📥 DOWNLOAD */}
+      <a href={previewImage} download className="download-btn">
+        ⬇ Download
+      </a>
+
+      {/* 🖼 IMAGE */}
+      <div className="image-container">
+        <img src={previewImage} alt="Preview" />
+      </div>
+
+    </div>
+  </div>
+)}
 
     </div>
   );
