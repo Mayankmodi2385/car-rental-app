@@ -37,7 +37,6 @@
   --border-strong: #c4b5fd;
   --border-gold: #fbbf24;
 
-  /* SQUARER radii — less pill, more boxy */
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 12px;
@@ -52,7 +51,6 @@
 
   --header-height: 72px;
 
-  /* BIGGER spacing for zoomed look */
   --spacing-xs: 6px;
   --spacing-sm: 10px;
   --spacing-md: 16px;
@@ -62,7 +60,6 @@
 }
 
 html {
-  /* BUMP base font for android readability */
   font-size: 17px;
   -webkit-text-size-adjust: 100%;
   scroll-behavior: smooth;
@@ -81,7 +78,7 @@ body {
 
 
 /* ============================================
-   LAYOUT — NEVER SHRINK, NEVER OVERFLOW
+   LAYOUT
    ============================================ */
 
 .container {
@@ -115,6 +112,7 @@ body {
   justify-content: space-between;
   padding: 0 var(--spacing-xl);
   padding-top: env(safe-area-inset-top);
+  height: calc(var(--header-height) + env(safe-area-inset-top));
   box-shadow: 0 3px 16px rgba(124,58,237,0.10);
 }
 
@@ -147,10 +145,6 @@ body {
   line-height: 1;
 }
 
-/* ============================================
-   LOGO — MOBILE CONTRAST FIX
-   ============================================ */
-
 .logo-brand {
   font-size: 23px;
   font-weight: 900;
@@ -158,14 +152,15 @@ body {
   line-height: 1.1;
 }
 
+/* ── LOGO LETTER COLOURS — fixed contrast ── */
 .logo-brand .l1  { color: #7c3aed; }
 .logo-brand .l2  { color: #4f46e5; }
 .logo-brand .l3  { color: #d97706; }
 .logo-brand .l4  { color: #f59e0b; }
 .logo-brand .l5  { color: #059669; }
-.logo-brand .l6  { color: #6d28d9; }
+.logo-brand .l6  { color: #6d28d9; }  /* FIX: was #7c3aed (duplicate of l1) */
 .logo-brand .l7  { color: #dc2626; }
-.logo-brand .l8  { color: #2563eb; }
+.logo-brand .l8  { color: #2563eb; }  /* FIX: was #4f46e5 (duplicate of l2) */
 .logo-brand .l9  { color: #d97706; }
 .logo-brand .l10 { color: #7c3aed; }
 
@@ -178,7 +173,6 @@ body {
   margin-top: 4px;
 }
 
-/* ── TOP-RIGHT LOGOUT BUTTON ── */
 .header-actions {
   display: flex;
   align-items: center;
@@ -199,18 +193,12 @@ body {
   letter-spacing: 0.2px;
 }
 
-.logout-btn:hover {
-  background: #fee2e2;
-  border-color: #fca5a5;
-}
-
-.logout-btn:active {
-  transform: scale(0.97);
-}
+.logout-btn:hover { background: #fee2e2; border-color: #fca5a5; }
+.logout-btn:active { transform: scale(0.97); }
 
 
 /* ============================================
-   CARDS — SQUARER, BIGGER
+   CARDS
    ============================================ */
 
 .card {
@@ -225,7 +213,7 @@ body {
 
 
 /* ============================================
-   SUMMARY STATS — SQUARE BOXES
+   SUMMARY STATS
    ============================================ */
 
 .summary {
@@ -236,9 +224,7 @@ body {
 }
 
 @media (min-width: 600px) {
-  .summary {
-    grid-template-columns: repeat(4, 1fr);
-  }
+  .summary { grid-template-columns: repeat(4, 1fr); }
 }
 
 .summary-card {
@@ -295,7 +281,7 @@ body {
 
 
 /* ============================================
-   SECTION HEADERS — BOLDER, BIGGER
+   SECTION HEADERS
    ============================================ */
 
 .section-header {
@@ -327,7 +313,7 @@ body {
 
 
 /* ============================================
-   FORM — SQUARER, BIGGER INPUTS
+   FORM INPUTS — BASE STYLES
    ============================================ */
 
 .form {
@@ -356,10 +342,6 @@ body {
   gap: var(--spacing-lg);
 }
 
-/* ============================================
-   FORM INPUTS — MOBILE VISIBLE FIX
-   ============================================ */
-
 select,
 input[type="text"],
 input[type="number"],
@@ -374,78 +356,26 @@ textarea {
   padding: 16px 18px;
   border-radius: var(--radius-md);
   border: 2px solid var(--border-strong);
-  background: #ffffff;
-  color: #1e1b4b;
+  background: var(--bg-subtle);
+  color: var(--text-primary);
   font-family: var(--font-main);
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 500;
   line-height: 1.4;
   outline: none;
   transition: border-color 0.15s, box-shadow 0.15s;
   -webkit-appearance: none;
   appearance: none;
   max-width: 100%;
-  /* FORCE visible text on Android */
-  -webkit-text-fill-color: #1e1b4b;
-  opacity: 1;
-}
-
-/* Date and time specific */
-input[type="date"],
-input[type="time"] {
-  color: #1e1b4b !important;
-  -webkit-text-fill-color: #1e1b4b !important;
-  min-height: 54px;
-  /* CRITICAL for Android Chrome — forces light color scheme */
-  color-scheme: light;
-}
-
-/* Calendar + clock icon — force visible purple */
-input[type="date"]::-webkit-calendar-picker-indicator,
-input[type="time"]::-webkit-calendar-picker-indicator {
-  opacity: 1 !important;
-  visibility: visible !important;
-  display: block !important;
-  cursor: pointer;
-  width: 24px;
-  height: 24px;
-  padding: 2px;
-  margin-left: 4px;
-  /* Purple color filter */
-  filter: invert(25%) sepia(90%) saturate(600%) hue-rotate(240deg) brightness(85%) !important;
-  background: transparent;
-  flex-shrink: 0;
-}
-
-input[type="date"]::-webkit-calendar-picker-indicator:hover,
-input[type="time"]::-webkit-calendar-picker-indicator:hover {
-  background-color: var(--brand-primary-light);
-  border-radius: 4px;
-}
-
-/* Android Chrome inner spin fix */
-input[type="date"]::-webkit-inner-spin-button,
-input[type="time"]::-webkit-inner-spin-button {
-  display: none;
-}
-
-/* Placeholder color for empty date/time */
-input[type="date"]:not([value]),
-input[type="date"][value=""],
-input[type="time"]:not([value]),
-input[type="time"][value=""] {
-  color: #9ca3af !important;
-  -webkit-text-fill-color: #9ca3af !important;
 }
 
 select {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237c3aed' stroke-width='1.8' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 16px center;
-  background-color: #ffffff;
+  background-color: var(--bg-subtle);
   padding-right: 44px;
   cursor: pointer;
-  -webkit-text-fill-color: #1e1b4b;
 }
 
 select:focus,
@@ -454,14 +384,11 @@ textarea:focus {
   border-color: var(--brand-primary);
   box-shadow: 0 0 0 4px rgba(124,58,237,0.15);
   background: #ffffff;
-  -webkit-text-fill-color: #1e1b4b;
 }
 
 input::placeholder,
 textarea::placeholder {
-  color: #a78bfa;
-  -webkit-text-fill-color: #a78bfa;
-  opacity: 1;
+  color: #c4b5fd;
 }
 
 textarea {
@@ -471,7 +398,60 @@ textarea {
 
 
 /* ============================================
-   BUTTONS — BIGGER, BOLDER
+   DATE & TIME INPUTS — ANDROID CHROME FIX
+   All rules in ONE place — no duplicates
+   ============================================ */
+
+input[type="date"],
+input[type="time"] {
+  /* CRITICAL: forces Android Chrome to use light-mode colours */
+  color-scheme: light;
+  /* Force dark text visible on white background */
+  color: #1e1b4b !important;
+  -webkit-text-fill-color: #1e1b4b !important;
+  opacity: 1 !important;
+  background-color: #ffffff !important;
+  min-height: 54px;
+}
+
+/* Grey placeholder when no value selected */
+input[type="date"]:not([value]),
+input[type="date"][value=""],
+input[type="time"]:not([value]),
+input[type="time"][value=""] {
+  color: #9ca3af !important;
+  -webkit-text-fill-color: #9ca3af !important;
+}
+
+/* Calendar / clock picker icon — purple, always visible */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: block !important;
+  cursor: pointer;
+  background-color: transparent;
+  padding: 4px;
+  border-radius: 4px;
+  width: 22px;
+  height: 22px;
+  filter: invert(25%) sepia(90%) saturate(600%) hue-rotate(240deg) brightness(85%);
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover,
+input[type="time"]::-webkit-calendar-picker-indicator:hover {
+  background-color: var(--brand-primary-light);
+}
+
+/* Hide inner spin buttons on date/time */
+input[type="date"]::-webkit-inner-spin-button,
+input[type="time"]::-webkit-inner-spin-button {
+  display: none;
+}
+
+
+/* ============================================
+   BUTTONS
    ============================================ */
 
 .btn {
@@ -496,7 +476,6 @@ textarea {
 .btn:active { transform: scale(0.97); }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-/* PRIMARY / SUBMIT — tall & prominent */
 .btn-primary,
 button[type="submit"] {
   background: linear-gradient(135deg, #7c3aed, #4f46e5);
@@ -522,31 +501,15 @@ button[type="submit"]:hover {
   color: var(--text-secondary);
   border-color: var(--border-strong);
 }
+.btn-secondary:hover { background: var(--bg-muted); color: var(--brand-primary); }
 
-.btn-secondary:hover {
-  background: var(--bg-muted);
-  color: var(--brand-primary);
-}
-
-.btn-success {
-  background: #f0fdf4;
-  color: #166534;
-  border-color: #bbf7d0;
-}
+.btn-success { background: #f0fdf4; color: #166534; border-color: #bbf7d0; }
 .btn-success:hover { background: #dcfce7; }
 
-.btn-danger {
-  background: #fef2f2;
-  color: #dc2626;
-  border-color: #fecaca;
-}
+.btn-danger { background: #fef2f2; color: #dc2626; border-color: #fecaca; }
 .btn-danger:hover { background: #fee2e2; }
 
-.btn-warning {
-  background: var(--brand-gold-light);
-  color: var(--brand-gold-text);
-  border-color: #fcd34d;
-}
+.btn-warning { background: var(--brand-gold-light); color: var(--brand-gold-text); border-color: #fcd34d; }
 .btn-warning:hover { background: #fde68a; }
 
 .btn--full { width: 100%; }
@@ -554,7 +517,7 @@ button[type="submit"]:hover {
 
 
 /* ============================================
-   ENTRY CARDS — SQUARER, BIGGER
+   ENTRY CARDS
    ============================================ */
 
 .list {
@@ -600,7 +563,7 @@ button[type="submit"]:hover {
 
 
 /* ============================================
-   ROW — BIGGER TEXT, MORE SPACING
+   ROW
    ============================================ */
 
 .row {
@@ -612,10 +575,7 @@ button[type="submit"]:hover {
   border-bottom: 1px solid #f3f0ff;
 }
 
-.row:last-child {
-  border-bottom: none;
-  padding-bottom: 0;
-}
+.row:last-child { border-bottom: none; padding-bottom: 0; }
 
 .row__key {
   font-size: 13px;
@@ -654,7 +614,7 @@ button[type="submit"]:hover {
 
 
 /* ============================================
-   BADGES — BIGGER
+   BADGES
    ============================================ */
 
 .badge {
@@ -695,10 +655,7 @@ button[type="submit"]:hover {
   gap: var(--spacing-md);
 }
 
-.actions .btn {
-  width: 100%;
-  justify-content: center;
-}
+.actions .btn { width: 100%; justify-content: center; }
 
 
 /* ============================================
@@ -722,10 +679,7 @@ button[type="submit"]:hover {
   font-weight: 600;
 }
 
-.docs .btn:hover {
-  background: var(--bg-muted);
-  color: var(--brand-primary);
-}
+.docs .btn:hover { background: var(--bg-muted); color: var(--brand-primary); }
 
 .doc-icon {
   width: 28px;
@@ -760,10 +714,7 @@ button[type="submit"]:hover {
 }
 
 @media (min-width: 600px) {
-  .modal-overlay {
-    align-items: center;
-    padding: var(--spacing-xl);
-  }
+  .modal-overlay { align-items: center; padding: var(--spacing-xl); }
 }
 
 .modal-content {
@@ -792,11 +743,7 @@ button[type="submit"]:hover {
   display: block;
 }
 
-.modal-title {
-  font-size: 20px;
-  font-weight: 900;
-  color: var(--brand-primary);
-}
+.modal-title { font-size: 20px; font-weight: 900; color: var(--brand-primary); }
 
 .modal-close {
   position: absolute;
@@ -816,10 +763,7 @@ button[type="submit"]:hover {
   padding: 0;
 }
 
-.modal-close:hover {
-  background: var(--bg-muted);
-  color: var(--brand-primary);
-}
+.modal-close:hover { background: var(--bg-muted); color: var(--brand-primary); }
 
 .image-container {
   width: 100%;
@@ -828,12 +772,7 @@ button[type="submit"]:hover {
   border: 1.5px solid var(--border-default);
 }
 
-.image-container img {
-  width: 100%;
-  height: auto;
-  display: block;
-  object-fit: cover;
-}
+.image-container img { width: 100%; height: auto; display: block; object-fit: cover; }
 
 
 /* ============================================
@@ -867,21 +806,16 @@ button[type="submit"]:hover {
    SAFE AREA (iOS notch / Android edge)
    ============================================ */
 
-.header {
-  padding-top: env(safe-area-inset-top);
-  height: calc(var(--header-height) + env(safe-area-inset-top));
-}
-
 .page-body {
   padding-top: calc(var(--header-height) + env(safe-area-inset-top) + var(--spacing-xl));
 }
 
 
 /* ============================================
-   RESPONSIVE — ANDROID MOBILE FIRST
+   RESPONSIVE — MOBILE FIRST
    ============================================ */
 
-/* Small phones */
+/* Small phones (≤400px) */
 @media (max-width: 400px) {
   :root {
     font-size: 16px;
@@ -894,8 +828,8 @@ button[type="submit"]:hover {
   .actions         { grid-template-columns: 1fr 1fr; }
   .container       { padding: 0 var(--spacing-lg) var(--spacing-2xl); }
   .logo-brand      { font-size: 19px; }
-  .logo-icon       { width: 38px; height: 38px; font-size: 18px; }
   .logo-sub        { display: none; }
+  .logo-icon       { width: 38px; height: 38px; font-size: 18px; } /* FIX: added */
 
   select,
   input[type="text"],
@@ -907,12 +841,12 @@ button[type="submit"]:hover {
   input[type="password"],
   input[type="search"],
   textarea {
-    font-size: 16px; /* keeps iOS from zooming on focus */
+    font-size: 16px;
     padding: 15px 16px;
   }
 }
 
-/* Typical Android (400–600px) */
+/* Typical Android (401–599px) */
 @media (min-width: 401px) and (max-width: 599px) {
   :root { font-size: 16px; }
   .form-row  { grid-template-columns: 1fr; }
@@ -950,8 +884,8 @@ button[type="submit"]:hover {
     --spacing-lg: 24px;
     --spacing-xl: 32px;
   }
-  .form-row { grid-template-columns: 1fr 1fr; }
-  .actions  { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+  .form-row  { grid-template-columns: 1fr 1fr; }
+  .actions   { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
   .container { padding: 0 var(--spacing-2xl) var(--spacing-2xl); }
 }
 

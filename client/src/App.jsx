@@ -25,7 +25,6 @@ function App() {
 
   const API = "https://car-rental-app-sdp6.onrender.com";
 
-  // ✅ FIX 1: Always send "Bearer <token>" — raw token causes 401
   const authHeader = () => ({ Authorization: `Bearer ${token}` });
 
   const showMessage = (msg, msgType) => {
@@ -189,6 +188,7 @@ function App() {
       <div className="page-body">
         <div className="container">
 
+          {/* SUMMARY STATS */}
           <div className="summary">
             <div className="summary-card summary-card--active">
               <div className="summary-card__value">₹{totalEarnings.toLocaleString()}</div>
@@ -208,56 +208,108 @@ function App() {
             </div>
           </div>
 
+          {/* FILTER + EXPORT */}
           <div className="card" style={{ marginBottom: "16px" }}>
             <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-              <select style={{ flex: 1, marginBottom: 0 }} value={filterCar} onChange={(e) => setFilterCar(e.target.value)}>
+              <select
+                style={{ flex: 1, marginBottom: 0 }}
+                value={filterCar}
+                onChange={(e) => setFilterCar(e.target.value)}
+              >
                 <option value="">All Cars</option>
-                <option>Baleno</option><option>Nexon</option><option>Altroz</option>
-                <option>Swift Dzire</option><option>Swift Automatic</option><option>Creta</option>
+                <option>Baleno</option>
+                <option>Nexon</option>
+                <option>Altroz</option>
+                <option>Swift Dzire</option>
+                <option>Swift Automatic</option>
+                <option>Creta</option>
               </select>
-              <button className="btn btn-secondary" style={{ width: "auto", whiteSpace: "nowrap", padding: "9px 14px" }} onClick={exportToExcel}>
+              <button
+                className="btn btn-secondary"
+                style={{ width: "auto", whiteSpace: "nowrap", padding: "9px 14px" }}
+                onClick={exportToExcel}
+              >
                 Export Excel
               </button>
             </div>
           </div>
 
+          {/* NEW RENTAL FORM */}
           <div className="section-header">
             <span className="section-title">New Rental Entry</span>
           </div>
           <div className="card" style={{ marginBottom: "20px" }}>
             <form onSubmit={handleSubmit} className="form">
+
+              {/* Car select */}
               <div className="form-group">
                 <label className="form-label">Car</label>
                 <select name="carName" value={form.carName} onChange={handleChange}>
                   <option value="">Select Car</option>
-                  <option>Baleno</option><option>Nexon</option><option>Altroz</option>
-                  <option>Swift Dzire</option><option>Swift Automatic</option><option>Creta</option>
+                  <option>Baleno</option>
+                  <option>Nexon</option>
+                  <option>Altroz</option>
+                  <option>Swift Dzire</option>
+                  <option>Swift Automatic</option>
+                  <option>Creta</option>
                 </select>
               </div>
+
+              {/* Start Date + Start Time — side by side */}
               <div className="form-row">
                 <div className="form-group">
                   <label className="form-label">Start Date</label>
-                  <input type="date" name="startDate" value={form.startDate} onChange={handleChange} style={{ colorScheme: "light" }} />
+                  <input
+                    type="date"
+                    name="startDate"
+                    value={form.startDate}
+                    onChange={handleChange}
+                    style={{ colorScheme: "light" }}
+                  />
                 </div>
                 <div className="form-group">
                   <label className="form-label">Start Time</label>
-                  <input type="time" name="startTime" value={form.startTime} onChange={handleChange} style={{ colorScheme: "light" }} />
+                  <input
+                    type="time"
+                    name="startTime"
+                    value={form.startTime}
+                    onChange={handleChange}
+                    style={{ colorScheme: "light" }}
+                  />
                 </div>
               </div>
+
+              {/* End Date */}
               <div className="form-group">
                 <label className="form-label">End Date</label>
-                <input type="date" name="endDate" value={form.endDate} onChange={handleChange} style={{ colorScheme: "light" }} />
+                <input
+                  type="date"
+                  name="endDate"
+                  value={form.endDate}
+                  onChange={handleChange}
+                  style={{ colorScheme: "light" }}
+                />
               </div>
+
+              {/* Price Per Day */}
               <div className="form-group">
                 <label className="form-label">Price Per Day (₹)</label>
-                <input type="number" name="pricePerDay" placeholder="e.g. 1200" value={form.pricePerDay} onChange={handleChange} />
+                <input
+                  type="number"
+                  name="pricePerDay"
+                  placeholder="e.g. 1200"
+                  value={form.pricePerDay}
+                  onChange={handleChange}
+                />
               </div>
+
               <button type="submit" disabled={loading}>
                 {loading ? "Adding..." : "Add Entry"}
               </button>
             </form>
           </div>
 
+          {/* RENTAL RECORDS */}
           <div className="section-header">
             <span className="section-title">Rental Records</span>
             <span className="text-sm text-muted">{filteredEntries.length} records</span>
@@ -273,6 +325,7 @@ function App() {
             <div className="list">
               {filteredEntries.map((e, index) => (
                 <div className="entry-card" key={e._id} style={{ animationDelay: `${index * 0.05}s` }}>
+
                   <div className="entry-card__header">
                     <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                       <span className="car-name">{e.carName}</span>
@@ -280,14 +333,19 @@ function App() {
                     </div>
                     <span className={getBadgeClass(e.status)}>{e.status}</span>
                   </div>
+
                   <div className="entry-card__body">
                     <div className="row">
                       <span className="row__key">Start</span>
                       <span className="row__val">
-                        {new Date(e.startDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                        {new Date(e.startDate).toLocaleDateString("en-IN", {
+                          day: "numeric", month: "short", year: "numeric",
+                        })}
                         {e.startTime && (
                           <span style={{ marginLeft: 6, color: "var(--text-muted)", fontSize: 12 }}>
-                            {new Date(`1970-01-01T${e.startTime}`).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                            {new Date(`1970-01-01T${e.startTime}`).toLocaleTimeString([], {
+                              hour: "2-digit", minute: "2-digit",
+                            })}
                           </span>
                         )}
                       </span>
@@ -295,7 +353,9 @@ function App() {
                     <div className="row">
                       <span className="row__key">End</span>
                       <span className="row__val">
-                        {new Date(e.endDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                        {new Date(e.endDate).toLocaleDateString("en-IN", {
+                          day: "numeric", month: "short", year: "numeric",
+                        })}
                       </span>
                     </div>
                     <div className="row">
@@ -305,22 +365,48 @@ function App() {
                       </span>
                     </div>
                   </div>
+
                   <div className="entry-card__footer">
                     <div className="actions" style={{ marginBottom: "10px" }}>
                       {e.status === "Active" && (
-                        <button className="btn btn-success btn--sm" onClick={() => markComplete(e._id)}>Mark Complete</button>
+                        <button className="btn btn-success btn--sm" onClick={() => markComplete(e._id)}>
+                          Mark Complete
+                        </button>
                       )}
-                      <button className="btn btn-secondary btn--sm" disabled={uploadingId === e._id}
-                        onClick={() => document.getElementById(`aadhar-${e._id}`).click()}>
+                      {/* Upload Aadhar */}
+                      <button
+                        className="btn btn-secondary btn--sm"
+                        disabled={uploadingId === e._id}
+                        onClick={() => document.getElementById(`aadhar-${e._id}`).click()}
+                      >
                         {uploadingId === e._id ? "Uploading..." : "Upload Aadhar"}
                       </button>
-                      <input type="file" id={`aadhar-${e._id}`} style={{ display: "none" }} accept="image/*,application/pdf" capture="environment" onChange={(ev) => handleUpload(ev, e._id, "aadhar")}/>
-                      <button className="btn btn-secondary btn--sm" disabled={uploadingId === e._id}
-                        onClick={() => document.getElementById(`license-${e._id}`).click()}>
+                      <input
+                        type="file"
+                        id={`aadhar-${e._id}`}
+                        style={{ display: "none" }}
+                        accept="image/*,application/pdf"
+                        capture="environment"
+                        onChange={(ev) => handleUpload(ev, e._id, "aadhar")}
+                      />
+                      {/* Upload License */}
+                      <button
+                        className="btn btn-secondary btn--sm"
+                        disabled={uploadingId === e._id}
+                        onClick={() => document.getElementById(`license-${e._id}`).click()}
+                      >
                         {uploadingId === e._id ? "Uploading..." : "Upload License"}
                       </button>
-                      <input type="file" id={`license-${e._id}`} style={{ display: "none" }}accept="image/*,application/pdf" capture="environment"onChange={(ev) => handleUpload(ev, e._id, "license")}/>
+                      <input
+                        type="file"
+                        id={`license-${e._id}`}
+                        style={{ display: "none" }}
+                        accept="image/*,application/pdf"
+                        capture="environment"
+                        onChange={(ev) => handleUpload(ev, e._id, "license")}
+                      />
                     </div>
+
                     <div className="docs">
                       {e.aadhar ? (
                         <button className="btn btn--sm" onClick={() => openPreview(e.aadhar)}>
@@ -338,6 +424,7 @@ function App() {
                       )}
                     </div>
                   </div>
+
                 </div>
               ))}
             </div>
@@ -346,7 +433,7 @@ function App() {
         </div>
       </div>
 
-      {/* MODAL */}
+      {/* IMAGE PREVIEW MODAL */}
       {previewImage && (
         <div className="modal-overlay" onClick={closePreview}>
           <div className="modal-content" onClick={(ev) => ev.stopPropagation()}>
@@ -358,8 +445,12 @@ function App() {
             <div className="image-container">
               <img src={previewImage} alt="Document Preview" />
             </div>
-            <a href={previewImage} download className="btn btn-primary"
-              style={{ marginTop: "14px", display: "flex", justifyContent: "center", textDecoration: "none" }}>
+            <a
+              href={previewImage}
+              download
+              className="btn btn-primary"
+              style={{ marginTop: "14px", display: "flex", justifyContent: "center", textDecoration: "none" }}
+            >
               Download
             </a>
           </div>
