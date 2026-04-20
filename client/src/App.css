@@ -87,7 +87,6 @@ body {
 .container {
   width: 100%;
   max-width: 100%;
-  /* generous side padding so nothing touches edges */
   padding: 0 var(--spacing-xl) var(--spacing-2xl);
   overflow-x: hidden;
 }
@@ -148,6 +147,10 @@ body {
   line-height: 1;
 }
 
+/* ============================================
+   LOGO — MOBILE CONTRAST FIX
+   ============================================ */
+
 .logo-brand {
   font-size: 23px;
   font-weight: 900;
@@ -160,9 +163,9 @@ body {
 .logo-brand .l3  { color: #d97706; }
 .logo-brand .l4  { color: #f59e0b; }
 .logo-brand .l5  { color: #059669; }
-.logo-brand .l6  { color: #7c3aed; }
+.logo-brand .l6  { color: #6d28d9; }
 .logo-brand .l7  { color: #dc2626; }
-.logo-brand .l8  { color: #4f46e5; }
+.logo-brand .l8  { color: #2563eb; }
 .logo-brand .l9  { color: #d97706; }
 .logo-brand .l10 { color: #7c3aed; }
 
@@ -215,7 +218,6 @@ body {
   background: var(--bg-card);
   border-radius: var(--radius-lg);
   border: 1.5px solid var(--border-default);
-  /* MORE padding for zoomed feel */
   padding: var(--spacing-xl) var(--spacing-xl);
   box-shadow: var(--shadow-sm);
   margin-bottom: var(--spacing-xl);
@@ -243,7 +245,6 @@ body {
   background: var(--bg-card);
   border: 1.5px solid var(--border-default);
   border-radius: var(--radius-lg);
-  /* True square via aspect-ratio */
   aspect-ratio: 1 / 1;
   padding: var(--spacing-md);
   text-align: center;
@@ -271,7 +272,6 @@ body {
 .summary-card:nth-child(4)::before { background: linear-gradient(90deg, #dc2626, #f87171); }
 
 .summary-card__value {
-  /* BIGGER numbers */
   font-size: 30px;
   font-weight: 900;
   color: var(--text-primary);
@@ -302,7 +302,6 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  /* BIGGER padding = squarer look */
   margin-bottom: var(--spacing-lg);
   padding: var(--spacing-lg) var(--spacing-xl);
   background: linear-gradient(135deg, #ede9fe, #faf8ff);
@@ -312,7 +311,6 @@ body {
 }
 
 .section-title {
-  /* BIGGER title */
   font-size: 19px;
   font-weight: 900;
   color: var(--text-primary);
@@ -358,7 +356,10 @@ body {
   gap: var(--spacing-lg);
 }
 
-/* BIGGER inputs — more zoomed in */
+/* ============================================
+   FORM INPUTS — MOBILE VISIBLE FIX
+   ============================================ */
+
 select,
 input[type="text"],
 input[type="number"],
@@ -370,32 +371,81 @@ input[type="password"],
 input[type="search"],
 textarea {
   width: 100%;
-  /* Taller + more side padding */
   padding: 16px 18px;
   border-radius: var(--radius-md);
   border: 2px solid var(--border-strong);
-  background: var(--bg-subtle);
-  color: var(--text-primary);
+  background: #ffffff;
+  color: #1e1b4b;
   font-family: var(--font-main);
-  /* BIGGER font inside inputs */
   font-size: 16px;
-  font-weight: 500;
+  font-weight: 600;
   line-height: 1.4;
   outline: none;
   transition: border-color 0.15s, box-shadow 0.15s;
   -webkit-appearance: none;
   appearance: none;
-  /* Prevent overflow on mobile */
   max-width: 100%;
+  /* FORCE visible text on Android */
+  -webkit-text-fill-color: #1e1b4b;
+  opacity: 1;
+}
+
+/* Date and time specific */
+input[type="date"],
+input[type="time"] {
+  color: #1e1b4b !important;
+  -webkit-text-fill-color: #1e1b4b !important;
+  min-height: 54px;
+  /* CRITICAL for Android Chrome — forces light color scheme */
+  color-scheme: light;
+}
+
+/* Calendar + clock icon — force visible purple */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: block !important;
+  cursor: pointer;
+  width: 24px;
+  height: 24px;
+  padding: 2px;
+  margin-left: 4px;
+  /* Purple color filter */
+  filter: invert(25%) sepia(90%) saturate(600%) hue-rotate(240deg) brightness(85%) !important;
+  background: transparent;
+  flex-shrink: 0;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover,
+input[type="time"]::-webkit-calendar-picker-indicator:hover {
+  background-color: var(--brand-primary-light);
+  border-radius: 4px;
+}
+
+/* Android Chrome inner spin fix */
+input[type="date"]::-webkit-inner-spin-button,
+input[type="time"]::-webkit-inner-spin-button {
+  display: none;
+}
+
+/* Placeholder color for empty date/time */
+input[type="date"]:not([value]),
+input[type="date"][value=""],
+input[type="time"]:not([value]),
+input[type="time"][value=""] {
+  color: #9ca3af !important;
+  -webkit-text-fill-color: #9ca3af !important;
 }
 
 select {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237c3aed' stroke-width='1.8' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 16px center;
-  background-color: var(--bg-subtle);
+  background-color: #ffffff;
   padding-right: 44px;
   cursor: pointer;
+  -webkit-text-fill-color: #1e1b4b;
 }
 
 select:focus,
@@ -404,11 +454,14 @@ textarea:focus {
   border-color: var(--brand-primary);
   box-shadow: 0 0 0 4px rgba(124,58,237,0.15);
   background: #ffffff;
+  -webkit-text-fill-color: #1e1b4b;
 }
 
 input::placeholder,
 textarea::placeholder {
-  color: #c4b5fd;
+  color: #a78bfa;
+  -webkit-text-fill-color: #a78bfa;
+  opacity: 1;
 }
 
 textarea {
@@ -426,7 +479,6 @@ textarea {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  /* BIGGER padding */
   padding: 14px 22px;
   border-radius: var(--radius-md);
   border: 2px solid transparent;
@@ -451,7 +503,6 @@ button[type="submit"] {
   color: #fff;
   border-color: #6d28d9;
   width: 100%;
-  /* BIGGER submit button */
   padding: 18px 22px;
   font-size: 17px;
   font-weight: 800;
@@ -528,7 +579,6 @@ button[type="submit"]:hover {
 }
 
 .entry-card__header {
-  /* MORE padding so header looks squarer */
   padding: var(--spacing-xl) var(--spacing-xl);
   display: flex;
   align-items: center;
@@ -844,6 +894,7 @@ button[type="submit"]:hover {
   .actions         { grid-template-columns: 1fr 1fr; }
   .container       { padding: 0 var(--spacing-lg) var(--spacing-2xl); }
   .logo-brand      { font-size: 19px; }
+  .logo-icon       { width: 38px; height: 38px; font-size: 18px; }
   .logo-sub        { display: none; }
 
   select,
@@ -934,55 +985,3 @@ button[type="submit"]:hover {
 .gap-md          { gap: var(--spacing-md); }
 .w-full          { width: 100%; }
 .hidden          { display: none !important; }
-
-/* ============================================
-   DATE / TIME INPUT — MOBILE VISIBILITY FIX
-   ============================================ */
-
-input[type="date"],
-input[type="time"] {
-  color: var(--text-primary);
-  /* Force dark text so dd-mm-yyyy is visible */
-  -webkit-text-fill-color: var(--text-primary);
-}
-
-/* Show placeholder text in date/time before value is set */
-input[type="date"]:not([value]),
-input[type="date"][value=""],
-input[type="time"]:not([value]),
-input[type="time"][value=""] {
-  color: #7c6faa;
-  -webkit-text-fill-color: #7c6faa;
-}
-
-/* Calendar / clock icon — make it purple and visible */
-input[type="date"]::-webkit-calendar-picker-indicator,
-input[type="time"]::-webkit-calendar-picker-indicator {
-  opacity: 1;
-  cursor: pointer;
-  background-color: transparent;
-  padding: 4px;
-  border-radius: 4px;
-  /* Purple tinted icon */
-  filter: invert(30%) sepia(80%) saturate(500%) hue-rotate(230deg) brightness(90%);
-  width: 22px;
-  height: 22px;
-}
-
-input[type="date"]::-webkit-calendar-picker-indicator:hover,
-input[type="time"]::-webkit-calendar-picker-indicator:hover {
-  background-color: var(--brand-primary-light);
-}
-
-/* Android Chrome inner spin fix */
-input[type="date"]::-webkit-inner-spin-button,
-input[type="time"]::-webkit-inner-spin-button {
-  display: none;
-}
-
-/* Fix for Android — ensure input doesn't show as blank */
-input[type="date"][value=""],
-input[type="time"][value=""] {
-  color: #9ca3af;
-  -webkit-text-fill-color: #9ca3af;
-}

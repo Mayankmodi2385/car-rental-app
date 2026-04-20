@@ -237,16 +237,16 @@ function App() {
               <div className="form-row">
                 <div className="form-group">
                   <label className="form-label">Start Date</label>
-                  <input type="date" name="startDate" value={form.startDate} onChange={handleChange} />
+                  <input type="date" name="startDate" value={form.startDate} onChange={handleChange} style={{ colorScheme: "light" }} />
                 </div>
                 <div className="form-group">
                   <label className="form-label">Start Time</label>
-                  <input type="time" name="startTime" value={form.startTime} onChange={handleChange} />
+                  <input type="time" name="startTime" value={form.startTime} onChange={handleChange} style={{ colorScheme: "light" }} />
                 </div>
               </div>
               <div className="form-group">
                 <label className="form-label">End Date</label>
-                <input type="date" name="endDate" value={form.endDate} onChange={handleChange} />
+                <input type="date" name="endDate" value={form.endDate} onChange={handleChange} style={{ colorScheme: "light" }} />
               </div>
               <div className="form-group">
                 <label className="form-label">Price Per Day (₹)</label>
