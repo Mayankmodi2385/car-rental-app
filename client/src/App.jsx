@@ -174,8 +174,10 @@ function App() {
 
       {/* HEADER */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <div className="logo">DriveKhata</div>
+        <div className="header">
+  <div className="logo">DriveKhata</div>
         <button onClick={logout} className="logout-btn">Logout</button>
+      </div>
       </div>
 
       {/* FILTER */}
