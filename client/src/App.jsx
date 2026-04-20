@@ -144,19 +144,24 @@ function App() {
 
   return (
     <>
-      {/* STICKY HEADER */}
-      <div className="header">
-        <div className="logo">
-          <div className="logo-icon">D</div>
-          <div>
-            DriveKhata
-            <span className="logo-sub">Car Rental</span>
-          </div>
-        </div>
-        <div className="header-actions">
-          <button className="logout-btn" onClick={logout}>Logout</button>
-        </div>
-      </div>
+     <div className="logo">
+  <div className="logo-icon">D</div>
+  <div className="logo-text">
+    <div className="logo-brand">
+      <span className="l1">D</span>
+      <span className="l2">r</span>
+      <span className="l3">i</span>
+      <span className="l4">v</span>
+      <span className="l5">e</span>
+      <span className="l6">K</span>
+      <span className="l7">h</span>
+      <span className="l8">a</span>
+      <span className="l9">t</span>
+      <span className="l10">a</span>
+    </div>
+    <span className="logo-sub">Car Rental</span>
+  </div>
+</div>
 
       {/* TOAST */}
       {message && (
