@@ -934,3 +934,55 @@ button[type="submit"]:hover {
 .gap-md          { gap: var(--spacing-md); }
 .w-full          { width: 100%; }
 .hidden          { display: none !important; }
+
+/* ============================================
+   DATE / TIME INPUT — MOBILE VISIBILITY FIX
+   ============================================ */
+
+input[type="date"],
+input[type="time"] {
+  color: var(--text-primary);
+  /* Force dark text so dd-mm-yyyy is visible */
+  -webkit-text-fill-color: var(--text-primary);
+}
+
+/* Show placeholder text in date/time before value is set */
+input[type="date"]:not([value]),
+input[type="date"][value=""],
+input[type="time"]:not([value]),
+input[type="time"][value=""] {
+  color: #7c6faa;
+  -webkit-text-fill-color: #7c6faa;
+}
+
+/* Calendar / clock icon — make it purple and visible */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  opacity: 1;
+  cursor: pointer;
+  background-color: transparent;
+  padding: 4px;
+  border-radius: 4px;
+  /* Purple tinted icon */
+  filter: invert(30%) sepia(80%) saturate(500%) hue-rotate(230deg) brightness(90%);
+  width: 22px;
+  height: 22px;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover,
+input[type="time"]::-webkit-calendar-picker-indicator:hover {
+  background-color: var(--brand-primary-light);
+}
+
+/* Android Chrome inner spin fix */
+input[type="date"]::-webkit-inner-spin-button,
+input[type="time"]::-webkit-inner-spin-button {
+  display: none;
+}
+
+/* Fix for Android — ensure input doesn't show as blank */
+input[type="date"][value=""],
+input[type="time"][value=""] {
+  color: #9ca3af;
+  -webkit-text-fill-color: #9ca3af;
+}

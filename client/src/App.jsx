@@ -314,12 +314,12 @@ function App() {
                         onClick={() => document.getElementById(`aadhar-${e._id}`).click()}>
                         {uploadingId === e._id ? "Uploading..." : "Upload Aadhar"}
                       </button>
-                      <input type="file" id={`aadhar-${e._id}`} style={{ display: "none" }} onChange={(ev) => handleUpload(ev, e._id, "aadhar")} />
+                      <input type="file" id={`aadhar-${e._id}`} style={{ display: "none" }} accept="image/*,application/pdf" capture="environment" onChange={(ev) => handleUpload(ev, e._id, "aadhar")}/>
                       <button className="btn btn-secondary btn--sm" disabled={uploadingId === e._id}
                         onClick={() => document.getElementById(`license-${e._id}`).click()}>
                         {uploadingId === e._id ? "Uploading..." : "Upload License"}
                       </button>
-                      <input type="file" id={`license-${e._id}`} style={{ display: "none" }} onChange={(ev) => handleUpload(ev, e._id, "license")} />
+                      <input type="file" id={`license-${e._id}`} style={{ display: "none" }}accept="image/*,application/pdf" capture="environment"onChange={(ev) => handleUpload(ev, e._id, "license")}/>
                     </div>
                     <div className="docs">
                       {e.aadhar ? (
