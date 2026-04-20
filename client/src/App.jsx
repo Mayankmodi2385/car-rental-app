@@ -9,6 +9,7 @@ function App() {
   const [form, setForm] = useState({
     carName: "",
     startDate: "",
+    startTime: "",
     endDate: "",
     pricePerDay: "",
   });
@@ -19,23 +20,18 @@ function App() {
 
   const [previewImage, setPreviewImage] = useState(null);
 
-  // 🔥 UX STATES
   const [loading, setLoading] = useState(false);
   const [uploadingId, setUploadingId] = useState(null);
 
-  // 🔥 NEW MESSAGE STATE
   const [message, setMessage] = useState("");
-  const [type, setType] = useState(""); // success | error
+  const [type, setType] = useState("");
 
   const API = "https://car-rental-app-sdp6.onrender.com";
 
   const showMessage = (msg, msgType) => {
     setMessage(msg);
     setType(msgType);
-
-    setTimeout(() => {
-      setMessage("");
-    }, 3000);
+    setTimeout(() => setMessage(""), 3000);
   };
 
   const logout = () => {
@@ -49,8 +45,7 @@ function App() {
         headers: { Authorization: token },
       });
       setEntries(res.data);
-    } catch (err) {
-      console.error(err);
+    } catch {
       showMessage("Failed to load data ❌", "error");
     }
   };
@@ -63,7 +58,6 @@ function App() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // 🔥 FORM SUBMIT
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -82,14 +76,14 @@ function App() {
       setForm({
         carName: "",
         startDate: "",
+        startTime: "",
         endDate: "",
         pricePerDay: "",
       });
 
       showMessage("Entry Added ✅", "success");
       fetchEntries();
-    } catch (err) {
-      console.error(err);
+    } catch {
       showMessage("Error adding entry ❌", "error");
     } finally {
       setLoading(false);
@@ -101,22 +95,18 @@ function App() {
       await axios.put(`${API}/entries/${id}`, {}, {
         headers: { Authorization: token },
       });
-      showMessage("Marked as Completed ✅", "success");
+      showMessage("Marked Completed ✅", "success");
       fetchEntries();
-    } catch (err) {
-      console.error(err);
+    } catch {
       showMessage("Error updating ❌", "error");
     }
   };
 
-  // 🔥 UPLOAD
   const handleUpload = async (event, id, typeFile) => {
     const file = event.target.files[0];
     const formData = new FormData();
 
-    if (file) {
-      formData.append(typeFile, file);
-    }
+    if (file) formData.append(typeFile, file);
 
     try {
       setUploadingId(id);
@@ -130,8 +120,7 @@ function App() {
 
       showMessage(`${typeFile} uploaded ✅`, "success");
       fetchEntries();
-    } catch (err) {
-      console.error(err);
+    } catch {
       showMessage("Upload failed ❌", "error");
     } finally {
       setUploadingId(null);
@@ -180,18 +169,16 @@ function App() {
   return (
     <div className="container">
 
-      {/* 🔥 MESSAGE BOX */}
-      {message && (
-        <div className={`toast ${type}`}>
-          {message}
-        </div>
-      )}
+      {/* TOAST */}
+      {message && <div className={`toast ${type}`}>{message}</div>}
 
+      {/* HEADER */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <h1 className="title">🚗 DriveKhata</h1>
         <button onClick={logout} className="logout-btn">Logout</button>
       </div>
 
+      {/* FILTER */}
       <div className="card">
         <select value={filterCar} onChange={(e) => setFilterCar(e.target.value)}>
           <option value="">All Cars</option>
@@ -206,11 +193,13 @@ function App() {
 
       <button onClick={exportToExcel}>📥 Export Excel</button>
 
+      {/* SUMMARY */}
       <div className="summary">
         <div className="card">💰 ₹{totalEarnings}</div>
         <div className="card">🚗 {activeCars} Active</div>
       </div>
 
+      {/* FORM */}
       <div className="card">
         <form onSubmit={handleSubmit} className="form">
 
@@ -225,6 +214,7 @@ function App() {
           </select>
 
           <input type="date" name="startDate" value={form.startDate} onChange={handleChange} />
+          <input type="time" name="startTime" value={form.startTime} onChange={handleChange} />
           <input type="date" name="endDate" value={form.endDate} onChange={handleChange} />
 
           <input
@@ -242,6 +232,7 @@ function App() {
         </form>
       </div>
 
+      {/* LIST */}
       <div className="list">
         {filteredEntries.map((e) => (
           <div className="entry-card" key={e._id}>
@@ -252,8 +243,20 @@ function App() {
             </div>
 
             <div className="row">
-              <span>📅 {new Date(e.startDate).toLocaleDateString()}</span>
-              <span>➡️ {new Date(e.endDate).toLocaleDateString()}</span>
+              <div>
+                <span>📅 {new Date(e.startDate).toLocaleDateString()}</span>
+                <br />
+                <span>
+                  ⏰ {e.startTime
+                    ? new Date(`1970-01-01T${e.startTime}`).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })
+                    : "--:--"}
+                </span>
+                <br />
+                <span>➡️ {new Date(e.endDate).toLocaleDateString()}</span>
+              </div>
             </div>
 
             <div className="row">
@@ -281,7 +284,7 @@ function App() {
                 type="file"
                 id={`aadhar-${e._id}`}
                 style={{ display: "none" }}
-                onChange={(event) => handleUpload(event, e._id, "aadhar")}
+                onChange={(e) => handleUpload(e, e.target.id.split("-")[1], "aadhar")}
               />
 
               <button
@@ -297,24 +300,20 @@ function App() {
                 type="file"
                 id={`license-${e._id}`}
                 style={{ display: "none" }}
-                onChange={(event) => handleUpload(event, e._id, "license")}
+                onChange={(e) => handleUpload(e, e.target.id.split("-")[1], "license")}
               />
 
             </div>
 
             <div className="docs">
               {e.aadhar ? (
-                <button onClick={() => openPreview(e.aadhar)}>
-                  📄 View Aadhar
-                </button>
+                <button onClick={() => openPreview(e.aadhar)}>📄 View Aadhar</button>
               ) : <span>📄 No Aadhar</span>}
 
               <br />
 
               {e.license ? (
-                <button onClick={() => openPreview(e.license)}>
-                  🚗 View License
-                </button>
+                <button onClick={() => openPreview(e.license)}>🚗 View License</button>
               ) : <span>🚗 No License</span>}
             </div>
 
@@ -322,13 +321,12 @@ function App() {
         ))}
       </div>
 
+      {/* MODAL */}
       {previewImage && (
         <div className="modal-overlay" onClick={closePreview}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <span className="close-btn" onClick={closePreview}>✖</span>
-            <a href={previewImage} download className="download-btn">
-              ⬇ Download
-            </a>
+            <a href={previewImage} download className="download-btn">⬇ Download</a>
             <div className="image-container">
               <img src={previewImage} alt="Preview" />
             </div>

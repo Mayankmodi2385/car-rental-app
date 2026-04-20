@@ -35,7 +35,7 @@ router.post(
     try {
       console.log("FILES:", req.files);
 
-      const { carName, startDate, endDate, pricePerDay } = req.body;
+      const { carName, startDate, startTime, endDate, pricePerDay } = req.body;
 
       const days =
         (new Date(endDate) - new Date(startDate)) /

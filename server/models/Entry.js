@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const entrySchema = new mongoose.Schema({
   carName: String,
   startDate: Date,
+  startTime: String,
   endDate: Date,
   pricePerDay: Number,
   totalAmount: Number,
