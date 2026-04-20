@@ -221,3 +221,11 @@ button {
   from { transform: scale(0.7); }
   to { transform: scale(1); }
 }
+.logout-btn {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+}

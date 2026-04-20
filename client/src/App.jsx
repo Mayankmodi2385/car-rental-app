@@ -17,12 +17,19 @@ function App() {
   const [filterCar, setFilterCar] = useState("");
   const [token, setToken] = useState(localStorage.getItem("token"));
 
-  // 🔥 NEW (PREVIEW STATE)
   const [previewImage, setPreviewImage] = useState(null);
+
+  // 🔥 NEW STATES
+  const [loading, setLoading] = useState(false);
+  const [uploadingId, setUploadingId] = useState(null);
 
   const API = "https://car-rental-app-sdp6.onrender.com";
 
-  // FETCH
+  const logout = () => {
+    localStorage.removeItem("token");
+    window.location.reload();
+  };
+
   const fetchEntries = async () => {
     try {
       const res = await axios.get(`${API}/entries`, {
@@ -38,19 +45,25 @@ function App() {
     fetchEntries();
   }, []);
 
-  // FORM
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  // 🔥 UPDATED SUBMIT WITH LOADING
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!form.carName || !form.startDate || !form.endDate) {
+      alert("Please fill all fields");
+      return;
+    }
+
     try {
+      setLoading(true);
+
       await axios.post(`${API}/entries`, form, {
         headers: { Authorization: token },
       });
-
-      alert("Entry Added ✅");
 
       setForm({
         carName: "",
@@ -60,12 +73,14 @@ function App() {
       });
 
       fetchEntries();
-    } catch {
+    } catch (err) {
+      console.error(err);
       alert("Error adding entry ❌");
+    } finally {
+      setLoading(false);
     }
   };
 
-  // COMPLETE
   const markComplete = async (id) => {
     try {
       await axios.put(`${API}/entries/${id}`, {}, {
@@ -77,7 +92,7 @@ function App() {
     }
   };
 
-  // UPLOAD
+  // 🔥 UPDATED UPLOAD WITH STATE
   const handleUpload = async (event, id, type) => {
     const file = event.target.files[0];
     const formData = new FormData();
@@ -87,6 +102,8 @@ function App() {
     }
 
     try {
+      setUploadingId(id);
+
       await axios.put(`${API}/entries/upload/${id}`, formData, {
         headers: {
           Authorization: token,
@@ -94,29 +111,22 @@ function App() {
         },
       });
 
-      alert(`${type} uploaded ✅`);
       fetchEntries();
     } catch (err) {
       console.error(err);
       alert("Upload failed ❌");
+    } finally {
+      setUploadingId(null);
     }
   };
 
-  // 🔥 PREVIEW HANDLERS
-  const openPreview = (url) => {
-    setPreviewImage(url);
-  };
+  const openPreview = (url) => setPreviewImage(url);
+  const closePreview = () => setPreviewImage(null);
 
-  const closePreview = () => {
-    setPreviewImage(null);
-  };
-
-  // FILTER
   const filteredEntries = filterCar
     ? entries.filter((e) => e.carName === filterCar)
     : entries;
 
-  // SUMMARY
   const totalEarnings = filteredEntries.reduce(
     (sum, e) => sum + (e.totalAmount || 0),
     0
@@ -126,7 +136,6 @@ function App() {
     (e) => e.status === "Active"
   ).length;
 
-  // EXPORT
   const exportToExcel = () => {
     const data = filteredEntries.map((e) => ({
       Car: e.carName,
@@ -146,14 +155,18 @@ function App() {
     saveAs(file, "Car_Report.xlsx");
   };
 
-  // LOGIN PROTECTION
   if (!token) {
     return <Login setToken={setToken} />;
   }
 
   return (
     <div className="container">
-      <h1 className="title">🚗 DriveKhata</h1>
+
+      {/* HEADER */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <h1 className="title">🚗 DriveKhata</h1>
+        <button onClick={logout} className="logout-btn">Logout</button>
+      </div>
 
       {/* FILTER */}
       <div className="card">
@@ -179,6 +192,7 @@ function App() {
       {/* FORM */}
       <div className="card">
         <form onSubmit={handleSubmit} className="form">
+
           <select name="carName" value={form.carName} onChange={handleChange}>
             <option value="">Select Car</option>
             <option>Baleno</option>
@@ -200,7 +214,11 @@ function App() {
             onChange={handleChange}
           />
 
-          <button type="submit">Add Entry</button>
+          {/* 🔥 LOADING BUTTON */}
+          <button type="submit" disabled={loading}>
+            {loading ? "Adding..." : "Add Entry"}
+          </button>
+
         </form>
       </div>
 
@@ -231,10 +249,14 @@ function App() {
                 </button>
               )}
 
-              <button onClick={() =>
-                document.getElementById(`aadhar-${e._id}`).click()
-              }>
-                📄 Upload Aadhar
+              {/* 🔥 AADHAR BUTTON */}
+              <button
+                disabled={uploadingId === e._id}
+                onClick={() =>
+                  document.getElementById(`aadhar-${e._id}`).click()
+                }
+              >
+                {uploadingId === e._id ? "Uploading..." : "📄 Upload Aadhar"}
               </button>
 
               <input
@@ -244,10 +266,14 @@ function App() {
                 onChange={(event) => handleUpload(event, e._id, "aadhar")}
               />
 
-              <button onClick={() =>
-                document.getElementById(`license-${e._id}`).click()
-              }>
-                🚗 Upload License
+              {/* 🔥 LICENSE BUTTON */}
+              <button
+                disabled={uploadingId === e._id}
+                onClick={() =>
+                  document.getElementById(`license-${e._id}`).click()
+                }
+              >
+                {uploadingId === e._id ? "Uploading..." : "🚗 Upload License"}
               </button>
 
               <input
@@ -259,7 +285,6 @@ function App() {
 
             </div>
 
-            {/* 🔥 UPDATED DOC VIEW */}
             <div className="docs">
               {e.aadhar ? (
                 <button onClick={() => openPreview(e.aadhar)}>
@@ -280,26 +305,20 @@ function App() {
         ))}
       </div>
 
+      {/* MODAL */}
       {previewImage && (
-  <div className="modal-overlay" onClick={closePreview}>
-    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-
-      {/* ❌ CLOSE */}
-      <span className="close-btn" onClick={closePreview}>✖</span>
-
-      {/* 📥 DOWNLOAD */}
-      <a href={previewImage} download className="download-btn">
-        ⬇ Download
-      </a>
-
-      {/* 🖼 IMAGE */}
-      <div className="image-container">
-        <img src={previewImage} alt="Preview" />
-      </div>
-
-    </div>
-  </div>
-)}
+        <div className="modal-overlay" onClick={closePreview}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <span className="close-btn" onClick={closePreview}>✖</span>
+            <a href={previewImage} download className="download-btn">
+              ⬇ Download
+            </a>
+            <div className="image-container">
+              <img src={previewImage} alt="Preview" />
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );
