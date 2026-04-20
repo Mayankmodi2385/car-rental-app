@@ -6,8 +6,7 @@ cloudinary.config({
   api_secret: process.env.API_SECRET,
 });
 
-console.log("CLOUD:", process.env.CLOUD_NAME);
-console.log("KEY:", process.env.API_KEY);
-console.log("SECRET:", process.env.API_SECRET);
+// ✅ Only log cloud name (never log API_SECRET in production!)
+console.log("✅ Cloudinary connected:", process.env.CLOUD_NAME);
 
 module.exports = cloudinary;

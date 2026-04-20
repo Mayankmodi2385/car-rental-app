@@ -15,42 +15,46 @@ const storage = new CloudinaryStorage({
   params: {
     folder: "car-rental",
     resource_type: "image",
-    allowed_formats: ["jpg", "png", "jpeg"],
+    allowed_formats: ["jpg", "png", "jpeg", "pdf"],
   },
 });
 
-const upload = multer({ storage });
+const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+});
 
 /* ===========================
    CREATE ENTRY (PROTECTED)
 =========================== */
 router.post(
   "/",
-  auth, // 🔥 PROTECT ROUTE
+  auth,
   upload.fields([
     { name: "aadhar", maxCount: 1 },
     { name: "license", maxCount: 1 },
   ]),
   async (req, res) => {
     try {
-      console.log("FILES:", req.files);
-
       const { carName, startDate, startTime, endDate, pricePerDay } = req.body;
 
-      const days =
-        (new Date(endDate) - new Date(startDate)) /
-        (1000 * 60 * 60 * 24);
+      // ✅ FIX: minimum 1 day, handle same-day rentals
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      const diffMs = end - start;
+      const days = Math.max(1, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
 
-      const totalAmount = days * pricePerDay;
+      const price = parseFloat(pricePerDay) || 0;
+      const totalAmount = days * price;
 
       const entry = await Entry.create({
         carName,
-        startDate,
-        endDate,
-        pricePerDay,
+        startDate: start,
+        startTime: startTime || "",
+        endDate: end,
+        pricePerDay: price,
         totalAmount,
         status: "Active",
-
         aadhar: req.files?.aadhar?.[0]?.path || null,
         license: req.files?.license?.[0]?.path || null,
       });
@@ -81,11 +85,14 @@ router.get("/", auth, async (req, res) => {
 =========================== */
 router.put("/:id", auth, async (req, res) => {
   try {
+    // ✅ FIX: don't conflict with /upload/:id — this handles status only
     const updated = await Entry.findByIdAndUpdate(
       req.params.id,
       { status: "Completed" },
       { new: true }
     );
+
+    if (!updated) return res.status(404).json({ message: "Entry not found" });
 
     res.json(updated);
   } catch (err) {
@@ -96,18 +103,17 @@ router.put("/:id", auth, async (req, res) => {
 
 /* ===========================
    UPLOAD DOCUMENTS (PROTECTED)
+   ✅ FIX: must come BEFORE /:id to avoid route conflict
 =========================== */
 router.put(
   "/upload/:id",
-  auth, // 🔥 PROTECT ROUTE
+  auth,
   upload.fields([
     { name: "aadhar", maxCount: 1 },
     { name: "license", maxCount: 1 },
   ]),
   async (req, res) => {
     try {
-      console.log("FILES:", req.files);
-
       const updateData = {};
 
       if (req.files?.aadhar) {
@@ -118,11 +124,17 @@ router.put(
         updateData.license = req.files.license[0].path;
       }
 
+      if (Object.keys(updateData).length === 0) {
+        return res.status(400).json({ message: "No file uploaded" });
+      }
+
       const updated = await Entry.findByIdAndUpdate(
         req.params.id,
         updateData,
         { new: true }
       );
+
+      if (!updated) return res.status(404).json({ message: "Entry not found" });
 
       res.json(updated);
     } catch (err) {
