@@ -855,3 +855,83 @@ button[type="submit"]:hover {
 .gap-md          { gap: var(--spacing-md); }
 .w-full          { width: 100%; }
 .hidden          { display: none !important; }
+
+/* Container and General Layout */
+.container {
+    max-width: 1200px; /* Centers the content and prevents over-stretching */
+    margin: 0 auto;
+    padding: 20px;
+    transform: scale(1.1); /* Subtle zoom for better visibility */
+    transform-origin: top center;
+}
+
+/* Transformation of Rectangles to Boxier Shapes */
+.car-selection-section, 
+.date-picker-section, 
+.price-section, 
+.entry-section,
+.lower-display-section {
+    background: #ffffff;
+    border-radius: 12px; /* Smoothed corners */
+    padding: 25px;
+    margin: 15px auto;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    
+    /* Force boxier aspect ratio */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 500px; /* Constrains width to prevent long rectangles */
+    min-height: 250px; /* Adds height to lean toward square look */
+}
+
+/* Scaling Form Elements (Select, Inputs, Buttons) */
+input[type="date"], 
+input[type="number"], 
+select, 
+button {
+    font-size: 1.2rem !important; /* Larger text for "zoomed" feel */
+    padding: 12px 20px !important;
+    width: 90%; /* Keeps elements consistent within the boxy containers */
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+/* Specific adjustment for 'Select Car' to reduce width */
+.car-option-select {
+    max-width: 400px;
+}
+
+/* Button Styling for "Add Entry" */
+.add-entry-btn {
+    background-color: #007bff;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    border: none;
+    height: 60px; /* Taller button for easier clicking */
+}
+
+.add-entry-btn:hover {
+    background-color: #0056b3;
+}
+
+/* Grid Layout for the bottom sections to keep them compact */
+.bottom-grid-wrapper {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    justify-items: center;
+}
+
+/* Label adjustments for visibility */
+label {
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin-bottom: 5px;
+    display: block;
+}
