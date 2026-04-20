@@ -25,6 +25,9 @@ function App() {
 
   const API = "https://car-rental-app-sdp6.onrender.com";
 
+  // ✅ FIX 1: Always send "Bearer <token>" — raw token causes 401
+  const authHeader = () => ({ Authorization: `Bearer ${token}` });
+
   const showMessage = (msg, msgType) => {
     setMessage(msg);
     setType(msgType);
@@ -33,13 +36,13 @@ function App() {
 
   const logout = () => {
     localStorage.removeItem("token");
-    window.location.reload();
+    setToken(null);
   };
 
   const fetchEntries = async () => {
     try {
       const res = await axios.get(`${API}/entries`, {
-        headers: { Authorization: token },
+        headers: authHeader(),
       });
       setEntries(res.data);
     } catch {
@@ -48,7 +51,7 @@ function App() {
   };
 
   useEffect(() => {
-    fetchEntries();
+    if (token) fetchEntries();
   }, []);
 
   const handleChange = (e) => {
@@ -64,7 +67,7 @@ function App() {
     try {
       setLoading(true);
       await axios.post(`${API}/entries`, form, {
-        headers: { Authorization: token },
+        headers: authHeader(),
       });
       setForm({ carName: "", startDate: "", startTime: "", endDate: "", pricePerDay: "" });
       showMessage("Entry added successfully", "success");
@@ -79,7 +82,7 @@ function App() {
   const markComplete = async (id) => {
     try {
       await axios.put(`${API}/entries/${id}`, {}, {
-        headers: { Authorization: token },
+        headers: authHeader(),
       });
       showMessage("Marked as completed", "success");
       fetchEntries();
@@ -95,7 +98,10 @@ function App() {
     try {
       setUploadingId(id);
       await axios.put(`${API}/entries/upload/${id}`, formData, {
-        headers: { Authorization: token, "Content-Type": "multipart/form-data" },
+        headers: {
+          ...authHeader(),
+          "Content-Type": "multipart/form-data",
+        },
       });
       showMessage(`${typeFile} uploaded successfully`, "success");
       fetchEntries();
@@ -144,42 +150,36 @@ function App() {
 
   return (
     <>
-     <div className="logo">
-  <div className="logo-icon">D</div>
-  <div className="logo-text">
-    <div className="logo-brand">
-      <span className="l1">D</span>
-      <span className="l2">r</span>
-      <span className="l3">i</span>
-      <span className="l4">v</span>
-      <span className="l5">e</span>
-      <span className="l6">K</span>
-      <span className="l7">h</span>
-      <span className="l8">a</span>
-      <span className="l9">t</span>
-      <span className="l10">a</span>
-    </div>
-    <span className="logo-sub">Car Rental</span>
-  </div>
-</div>
+      {/* HEADER */}
+      <header className="header">
+        <div className="logo">
+          <div className="logo-icon">D</div>
+          <div className="logo-text">
+            <div className="logo-brand">
+              <span className="l1">D</span><span className="l2">r</span>
+              <span className="l3">i</span><span className="l4">v</span>
+              <span className="l5">e</span><span className="l6">K</span>
+              <span className="l7">h</span><span className="l8">a</span>
+              <span className="l9">t</span><span className="l10">a</span>
+            </div>
+            <span className="logo-sub">Car Rental</span>
+          </div>
+        </div>
+        <div className="header-actions">
+          <button className="logout-btn" onClick={logout}>Logout</button>
+        </div>
+      </header>
 
       {/* TOAST */}
       {message && (
         <div style={{
-          position: "fixed",
-          top: "calc(56px + 12px)",
-          left: "50%",
-          transform: "translateX(-50%)",
-          zIndex: 300,
+          position: "fixed", top: "calc(72px + 12px)", left: "50%",
+          transform: "translateX(-50%)", zIndex: 300,
           background: type === "success" ? "#f0fdf4" : "#fef2f2",
           color: type === "success" ? "#166534" : "#b91c1c",
-          border: `1px solid ${type === "success" ? "#bbf7d0" : "#fecaca"}`,
-          borderRadius: "var(--radius-md)",
-          padding: "10px 20px",
-          fontSize: "13px",
-          fontWeight: 600,
-          boxShadow: "var(--shadow-md)",
-          whiteSpace: "nowrap",
+          border: `1.5px solid ${type === "success" ? "#bbf7d0" : "#fecaca"}`,
+          borderRadius: "var(--radius-md)", padding: "12px 24px",
+          fontSize: "14px", fontWeight: 700, boxShadow: "var(--shadow-md)", whiteSpace: "nowrap",
         }}>
           {message}
         </div>
@@ -189,7 +189,6 @@ function App() {
       <div className="page-body">
         <div className="container">
 
-          {/* SUMMARY STATS */}
           <div className="summary">
             <div className="summary-card summary-card--active">
               <div className="summary-card__value">₹{totalEarnings.toLocaleString()}</div>
@@ -209,52 +208,32 @@ function App() {
             </div>
           </div>
 
-          {/* FILTER + EXPORT ROW */}
           <div className="card" style={{ marginBottom: "16px" }}>
             <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-              <select
-                style={{ flex: 1, marginBottom: 0 }}
-                value={filterCar}
-                onChange={(e) => setFilterCar(e.target.value)}
-              >
+              <select style={{ flex: 1, marginBottom: 0 }} value={filterCar} onChange={(e) => setFilterCar(e.target.value)}>
                 <option value="">All Cars</option>
-                <option>Baleno</option>
-                <option>Nexon</option>
-                <option>Altroz</option>
-                <option>Swift Dzire</option>
-                <option>Swift Automatic</option>
-                <option>Creta</option>
+                <option>Baleno</option><option>Nexon</option><option>Altroz</option>
+                <option>Swift Dzire</option><option>Swift Automatic</option><option>Creta</option>
               </select>
-              <button
-                className="btn btn-secondary"
-                style={{ width: "auto", whiteSpace: "nowrap", padding: "9px 14px" }}
-                onClick={exportToExcel}
-              >
+              <button className="btn btn-secondary" style={{ width: "auto", whiteSpace: "nowrap", padding: "9px 14px" }} onClick={exportToExcel}>
                 Export Excel
               </button>
             </div>
           </div>
 
-          {/* ADD ENTRY FORM */}
           <div className="section-header">
             <span className="section-title">New Rental Entry</span>
           </div>
           <div className="card" style={{ marginBottom: "20px" }}>
             <form onSubmit={handleSubmit} className="form">
-
               <div className="form-group">
                 <label className="form-label">Car</label>
                 <select name="carName" value={form.carName} onChange={handleChange}>
                   <option value="">Select Car</option>
-                  <option>Baleno</option>
-                  <option>Nexon</option>
-                  <option>Altroz</option>
-                  <option>Swift Dzire</option>
-                  <option>Swift Automatic</option>
-                  <option>Creta</option>
+                  <option>Baleno</option><option>Nexon</option><option>Altroz</option>
+                  <option>Swift Dzire</option><option>Swift Automatic</option><option>Creta</option>
                 </select>
               </div>
-
               <div className="form-row">
                 <div className="form-group">
                   <label className="form-label">Start Date</label>
@@ -265,31 +244,20 @@ function App() {
                   <input type="time" name="startTime" value={form.startTime} onChange={handleChange} />
                 </div>
               </div>
-
               <div className="form-group">
                 <label className="form-label">End Date</label>
                 <input type="date" name="endDate" value={form.endDate} onChange={handleChange} />
               </div>
-
               <div className="form-group">
                 <label className="form-label">Price Per Day (₹)</label>
-                <input
-                  type="number"
-                  name="pricePerDay"
-                  placeholder="e.g. 1200"
-                  value={form.pricePerDay}
-                  onChange={handleChange}
-                />
+                <input type="number" name="pricePerDay" placeholder="e.g. 1200" value={form.pricePerDay} onChange={handleChange} />
               </div>
-
-              <button type="submit" className="btn btn-primary" disabled={loading}>
+              <button type="submit" disabled={loading}>
                 {loading ? "Adding..." : "Add Entry"}
               </button>
-
             </form>
           </div>
 
-          {/* RENTAL LIST */}
           <div className="section-header">
             <span className="section-title">Rental Records</span>
             <span className="text-sm text-muted">{filteredEntries.length} records</span>
@@ -304,24 +272,14 @@ function App() {
           ) : (
             <div className="list">
               {filteredEntries.map((e, index) => (
-                <div
-                  className="entry-card"
-                  key={e._id}
-                  style={{ animationDelay: `${index * 0.05}s` }}
-                >
-
-                  {/* CARD HEADER */}
+                <div className="entry-card" key={e._id} style={{ animationDelay: `${index * 0.05}s` }}>
                   <div className="entry-card__header">
                     <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                       <span className="car-name">{e.carName}</span>
-                      {e.plateNumber && (
-                        <span className="car-plate">{e.plateNumber}</span>
-                      )}
+                      {e.plateNumber && <span className="car-plate">{e.plateNumber}</span>}
                     </div>
                     <span className={getBadgeClass(e.status)}>{e.status}</span>
                   </div>
-
-                  {/* CARD BODY */}
                   <div className="entry-card__body">
                     <div className="row">
                       <span className="row__key">Start</span>
@@ -347,47 +305,22 @@ function App() {
                       </span>
                     </div>
                   </div>
-
-                  {/* CARD FOOTER — ACTIONS */}
                   <div className="entry-card__footer">
                     <div className="actions" style={{ marginBottom: "10px" }}>
                       {e.status === "Active" && (
-                        <button
-                          className="btn btn-success btn--sm"
-                          onClick={() => markComplete(e._id)}
-                        >
-                          Mark Complete
-                        </button>
+                        <button className="btn btn-success btn--sm" onClick={() => markComplete(e._id)}>Mark Complete</button>
                       )}
-                      <button
-                        className="btn btn-secondary btn--sm"
-                        disabled={uploadingId === e._id}
-                        onClick={() => document.getElementById(`aadhar-${e._id}`).click()}
-                      >
+                      <button className="btn btn-secondary btn--sm" disabled={uploadingId === e._id}
+                        onClick={() => document.getElementById(`aadhar-${e._id}`).click()}>
                         {uploadingId === e._id ? "Uploading..." : "Upload Aadhar"}
                       </button>
-                      <input
-                        type="file"
-                        id={`aadhar-${e._id}`}
-                        style={{ display: "none" }}
-                        onChange={(ev) => handleUpload(ev, e._id, "aadhar")}
-                      />
-                      <button
-                        className="btn btn-secondary btn--sm"
-                        disabled={uploadingId === e._id}
-                        onClick={() => document.getElementById(`license-${e._id}`).click()}
-                      >
+                      <input type="file" id={`aadhar-${e._id}`} style={{ display: "none" }} onChange={(ev) => handleUpload(ev, e._id, "aadhar")} />
+                      <button className="btn btn-secondary btn--sm" disabled={uploadingId === e._id}
+                        onClick={() => document.getElementById(`license-${e._id}`).click()}>
                         {uploadingId === e._id ? "Uploading..." : "Upload License"}
                       </button>
-                      <input
-                        type="file"
-                        id={`license-${e._id}`}
-                        style={{ display: "none" }}
-                        onChange={(ev) => handleUpload(ev, e._id, "license")}
-                      />
+                      <input type="file" id={`license-${e._id}`} style={{ display: "none" }} onChange={(ev) => handleUpload(ev, e._id, "license")} />
                     </div>
-
-                    {/* DOCUMENTS */}
                     <div className="docs">
                       {e.aadhar ? (
                         <button className="btn btn--sm" onClick={() => openPreview(e.aadhar)}>
@@ -405,7 +338,6 @@ function App() {
                       )}
                     </div>
                   </div>
-
                 </div>
               ))}
             </div>
@@ -414,7 +346,7 @@ function App() {
         </div>
       </div>
 
-      {/* IMAGE PREVIEW MODAL */}
+      {/* MODAL */}
       {previewImage && (
         <div className="modal-overlay" onClick={closePreview}>
           <div className="modal-content" onClick={(ev) => ev.stopPropagation()}>
@@ -426,14 +358,10 @@ function App() {
             <div className="image-container">
               <img src={previewImage} alt="Document Preview" />
             </div>
-            
-              href={previewImage}
-              download
-              className="btn btn-primary"
-              style={{ marginTop: "14px", display: "flex", justifyContent: "center", textDecoration: "none" }}
-            
+            <a href={previewImage} download className="btn btn-primary"
+              style={{ marginTop: "14px", display: "flex", justifyContent: "center", textDecoration: "none" }}>
               Download
-          
+            </a>
           </div>
         </div>
       )}
