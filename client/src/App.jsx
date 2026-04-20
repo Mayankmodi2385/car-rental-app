@@ -19,11 +19,24 @@ function App() {
 
   const [previewImage, setPreviewImage] = useState(null);
 
-  // 🔥 NEW STATES
+  // 🔥 UX STATES
   const [loading, setLoading] = useState(false);
   const [uploadingId, setUploadingId] = useState(null);
 
+  // 🔥 NEW MESSAGE STATE
+  const [message, setMessage] = useState("");
+  const [type, setType] = useState(""); // success | error
+
   const API = "https://car-rental-app-sdp6.onrender.com";
+
+  const showMessage = (msg, msgType) => {
+    setMessage(msg);
+    setType(msgType);
+
+    setTimeout(() => {
+      setMessage("");
+    }, 3000);
+  };
 
   const logout = () => {
     localStorage.removeItem("token");
@@ -38,6 +51,7 @@ function App() {
       setEntries(res.data);
     } catch (err) {
       console.error(err);
+      showMessage("Failed to load data ❌", "error");
     }
   };
 
@@ -49,12 +63,12 @@ function App() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // 🔥 UPDATED SUBMIT WITH LOADING
+  // 🔥 FORM SUBMIT
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!form.carName || !form.startDate || !form.endDate) {
-      alert("Please fill all fields");
+      showMessage("Please fill all fields ⚠️", "error");
       return;
     }
 
@@ -72,10 +86,11 @@ function App() {
         pricePerDay: "",
       });
 
+      showMessage("Entry Added ✅", "success");
       fetchEntries();
     } catch (err) {
       console.error(err);
-      alert("Error adding entry ❌");
+      showMessage("Error adding entry ❌", "error");
     } finally {
       setLoading(false);
     }
@@ -86,19 +101,21 @@ function App() {
       await axios.put(`${API}/entries/${id}`, {}, {
         headers: { Authorization: token },
       });
+      showMessage("Marked as Completed ✅", "success");
       fetchEntries();
     } catch (err) {
       console.error(err);
+      showMessage("Error updating ❌", "error");
     }
   };
 
-  // 🔥 UPDATED UPLOAD WITH STATE
-  const handleUpload = async (event, id, type) => {
+  // 🔥 UPLOAD
+  const handleUpload = async (event, id, typeFile) => {
     const file = event.target.files[0];
     const formData = new FormData();
 
     if (file) {
-      formData.append(type, file);
+      formData.append(typeFile, file);
     }
 
     try {
@@ -111,10 +128,11 @@ function App() {
         },
       });
 
+      showMessage(`${typeFile} uploaded ✅`, "success");
       fetchEntries();
     } catch (err) {
       console.error(err);
-      alert("Upload failed ❌");
+      showMessage("Upload failed ❌", "error");
     } finally {
       setUploadingId(null);
     }
@@ -162,13 +180,18 @@ function App() {
   return (
     <div className="container">
 
-      {/* HEADER */}
+      {/* 🔥 MESSAGE BOX */}
+      {message && (
+        <div className={`toast ${type}`}>
+          {message}
+        </div>
+      )}
+
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <h1 className="title">🚗 DriveKhata</h1>
         <button onClick={logout} className="logout-btn">Logout</button>
       </div>
 
-      {/* FILTER */}
       <div className="card">
         <select value={filterCar} onChange={(e) => setFilterCar(e.target.value)}>
           <option value="">All Cars</option>
@@ -183,13 +206,11 @@ function App() {
 
       <button onClick={exportToExcel}>📥 Export Excel</button>
 
-      {/* SUMMARY */}
       <div className="summary">
         <div className="card">💰 ₹{totalEarnings}</div>
         <div className="card">🚗 {activeCars} Active</div>
       </div>
 
-      {/* FORM */}
       <div className="card">
         <form onSubmit={handleSubmit} className="form">
 
@@ -214,7 +235,6 @@ function App() {
             onChange={handleChange}
           />
 
-          {/* 🔥 LOADING BUTTON */}
           <button type="submit" disabled={loading}>
             {loading ? "Adding..." : "Add Entry"}
           </button>
@@ -222,7 +242,6 @@ function App() {
         </form>
       </div>
 
-      {/* LIST */}
       <div className="list">
         {filteredEntries.map((e) => (
           <div className="entry-card" key={e._id}>
@@ -249,7 +268,6 @@ function App() {
                 </button>
               )}
 
-              {/* 🔥 AADHAR BUTTON */}
               <button
                 disabled={uploadingId === e._id}
                 onClick={() =>
@@ -266,7 +284,6 @@ function App() {
                 onChange={(event) => handleUpload(event, e._id, "aadhar")}
               />
 
-              {/* 🔥 LICENSE BUTTON */}
               <button
                 disabled={uploadingId === e._id}
                 onClick={() =>
@@ -305,7 +322,6 @@ function App() {
         ))}
       </div>
 
-      {/* MODAL */}
       {previewImage && (
         <div className="modal-overlay" onClick={closePreview}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
