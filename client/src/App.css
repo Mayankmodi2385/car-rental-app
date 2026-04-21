@@ -356,17 +356,19 @@ textarea {
   padding: 16px 18px;
   border-radius: var(--radius-md);
   border: 2px solid var(--border-strong);
-  background: var(--bg-subtle);
-  color: var(--text-primary);
+  background: #ffffff;
+  color: #1e1b4b;
+  -webkit-text-fill-color: #1e1b4b;
   font-family: var(--font-main);
   font-size: 16px;
-  font-weight: 500;
+  font-weight: 600;
   line-height: 1.4;
   outline: none;
   transition: border-color 0.15s, box-shadow 0.15s;
   -webkit-appearance: none;
   appearance: none;
   max-width: 100%;
+  opacity: 1;
 }
 
 select {
@@ -384,6 +386,7 @@ textarea:focus {
   border-color: var(--brand-primary);
   box-shadow: 0 0 0 4px rgba(124,58,237,0.15);
   background: #ffffff;
+  -webkit-text-fill-color: #1e1b4b;
 }
 
 input::placeholder,
@@ -405,7 +408,11 @@ textarea {
 input[type="date"],
 input[type="time"] {
   /* CRITICAL: forces Android Chrome to use light-mode colours */
-  color-scheme: light;
+  color-scheme: light !important;
+  -webkit-color-scheme: light !important;
+  background: #ffffff !important;
+  -webkit-appearance: auto !important;
+  appearance: auto !important;
   /* Force dark text visible on white background */
   color: #1e1b4b !important;
   -webkit-text-fill-color: #1e1b4b !important;
