@@ -22,6 +22,7 @@ function App() {
   const [uploadingId, setUploadingId] = useState(null);
   const [message, setMessage] = useState("");
   const [type, setType] = useState("");
+  const [showIosHint, setShowIosHint] = useState(false);
 
   const API = "https://car-rental-app-sdp6.onrender.com";
 
@@ -51,6 +52,20 @@ function App() {
 
   useEffect(() => {
     if (token) fetchEntries();
+  }, []);
+
+  // iOS Install Hint — shows only on iPhone/iPad Safari, not already installed
+  useEffect(() => {
+    const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    const isInStandaloneMode =
+      window.matchMedia("(display-mode: standalone)").matches ||
+      window.navigator.standalone === true;
+    const hintDismissed = localStorage.getItem("iosHintDismissed");
+
+    if (isIos && !isInStandaloneMode && !hintDismissed) {
+      // Small delay so it doesn't flash immediately on load
+      setTimeout(() => setShowIosHint(true), 1500);
+    }
   }, []);
 
   const handleChange = (e) => {
@@ -149,7 +164,7 @@ function App() {
 
   return (
     <>
-      {/* HEADER */}
+      {/* STICKY HEADER */}
       <header className="header">
         <div className="logo">
           <div className="logo-icon">D</div>
@@ -169,16 +184,181 @@ function App() {
         </div>
       </header>
 
+      {/* iOS INSTALL HINT BANNER */}
+      {showIosHint && (
+        <div style={{
+          position: "fixed",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          zIndex: 500,
+          background: "#ffffff",
+          borderTop: "2px solid #ddd6fe",
+          borderRadius: "16px 16px 0 0",
+          padding: "16px 20px 36px",
+          boxShadow: "0 -4px 32px rgba(124,58,237,0.18)",
+        }}>
+          {/* Banner Header */}
+          <div style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 12,
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <div style={{
+                width: 46,
+                height: 46,
+                background: "linear-gradient(135deg, #7c3aed, #4f46e5)",
+                borderRadius: 12,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#fff",
+                fontWeight: 900,
+                fontSize: 22,
+                flexShrink: 0,
+                boxShadow: "0 4px 12px rgba(124,58,237,0.3)",
+              }}>D</div>
+              <div>
+                <div style={{
+                  fontWeight: 800,
+                  fontSize: 16,
+                  color: "#1e1b4b",
+                  letterSpacing: -0.3,
+                }}>Install DriveKhata</div>
+                <div style={{
+                  fontSize: 12,
+                  color: "#9ca3af",
+                  marginTop: 2,
+                  fontWeight: 500,
+                }}>Add to your iPhone home screen</div>
+              </div>
+            </div>
+            <button
+              onClick={() => {
+                localStorage.setItem("iosHintDismissed", "true");
+                setShowIosHint(false);
+              }}
+              style={{
+                background: "#f5f3ff",
+                border: "1px solid #ddd6fe",
+                borderRadius: "50%",
+                width: 32,
+                height: 32,
+                fontSize: 16,
+                color: "#7c3aed",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+                fontWeight: 700,
+              }}
+            >✕</button>
+          </div>
+
+          {/* Step-by-step instructions */}
+          <div style={{
+            background: "#f5f3ff",
+            borderRadius: 12,
+            padding: "14px 16px",
+            border: "1.5px solid #ddd6fe",
+          }}>
+            {/* Step 1 */}
+            <div style={{
+              display: "flex",
+              alignItems: "flex-start",
+              gap: 10,
+              marginBottom: 10,
+            }}>
+              <div style={{
+                width: 24,
+                height: 24,
+                background: "#7c3aed",
+                borderRadius: "50%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#fff",
+                fontSize: 12,
+                fontWeight: 800,
+                flexShrink: 0,
+                marginTop: 1,
+              }}>1</div>
+              <div style={{ fontSize: 13, color: "#4c1d95", fontWeight: 500, lineHeight: 1.5 }}>
+                Tap the <strong style={{ color: "#7c3aed" }}>Share button</strong>{" "}
+                <span style={{
+                  display: "inline-block",
+                  background: "#7c3aed",
+                  color: "#fff",
+                  borderRadius: 6,
+                  padding: "1px 7px",
+                  fontSize: 13,
+                  fontWeight: 700,
+                }}>⬆</span>{" "}
+                at the bottom of Safari
+              </div>
+            </div>
+
+            {/* Step 2 */}
+            <div style={{
+              display: "flex",
+              alignItems: "flex-start",
+              gap: 10,
+            }}>
+              <div style={{
+                width: 24,
+                height: 24,
+                background: "#d97706",
+                borderRadius: "50%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#fff",
+                fontSize: 12,
+                fontWeight: 800,
+                flexShrink: 0,
+                marginTop: 1,
+              }}>2</div>
+              <div style={{ fontSize: 13, color: "#4c1d95", fontWeight: 500, lineHeight: 1.5 }}>
+                Scroll down and tap{" "}
+                <strong style={{ color: "#d97706" }}>"Add to Home Screen"</strong>
+                {" "}then tap <strong style={{ color: "#7c3aed" }}>Add</strong>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom note */}
+          <div style={{
+            textAlign: "center",
+            fontSize: 11,
+            color: "#9ca3af",
+            marginTop: 10,
+            fontWeight: 500,
+          }}>
+            ⚠️ Only works in Safari — not Chrome or Firefox
+          </div>
+        </div>
+      )}
+
       {/* TOAST */}
       {message && (
         <div style={{
-          position: "fixed", top: "calc(72px + 12px)", left: "50%",
-          transform: "translateX(-50%)", zIndex: 300,
+          position: "fixed",
+          top: "calc(72px + 12px)",
+          left: "50%",
+          transform: "translateX(-50%)",
+          zIndex: 300,
           background: type === "success" ? "#f0fdf4" : "#fef2f2",
           color: type === "success" ? "#166534" : "#b91c1c",
           border: `1.5px solid ${type === "success" ? "#bbf7d0" : "#fecaca"}`,
-          borderRadius: "var(--radius-md)", padding: "12px 24px",
-          fontSize: "14px", fontWeight: 700, boxShadow: "var(--shadow-md)", whiteSpace: "nowrap",
+          borderRadius: "var(--radius-md)",
+          padding: "12px 24px",
+          fontSize: "14px",
+          fontWeight: 700,
+          boxShadow: "var(--shadow-md)",
+          whiteSpace: "nowrap",
         }}>
           {message}
         </div>
@@ -241,7 +421,6 @@ function App() {
           <div className="card" style={{ marginBottom: "20px" }}>
             <form onSubmit={handleSubmit} className="form">
 
-              {/* Car select */}
               <div className="form-group">
                 <label className="form-label">Car</label>
                 <select name="carName" value={form.carName} onChange={handleChange}>
@@ -255,7 +434,6 @@ function App() {
                 </select>
               </div>
 
-              {/* Start Date + Start Time — side by side */}
               <div className="form-row">
                 <div className="form-group">
                   <label className="form-label">Start Date</label>
@@ -279,7 +457,6 @@ function App() {
                 </div>
               </div>
 
-              {/* End Date */}
               <div className="form-group">
                 <label className="form-label">End Date</label>
                 <input
@@ -291,7 +468,6 @@ function App() {
                 />
               </div>
 
-              {/* Price Per Day */}
               <div className="form-group">
                 <label className="form-label">Price Per Day (₹)</label>
                 <input
@@ -306,6 +482,7 @@ function App() {
               <button type="submit" disabled={loading}>
                 {loading ? "Adding..." : "Add Entry"}
               </button>
+
             </form>
           </div>
 
@@ -324,8 +501,11 @@ function App() {
           ) : (
             <div className="list">
               {filteredEntries.map((e, index) => (
-                <div className="entry-card" key={e._id} style={{ animationDelay: `${index * 0.05}s` }}>
-
+                <div
+                  className="entry-card"
+                  key={e._id}
+                  style={{ animationDelay: `${index * 0.05}s` }}
+                >
                   <div className="entry-card__header">
                     <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                       <span className="car-name">{e.carName}</span>
@@ -360,7 +540,10 @@ function App() {
                     </div>
                     <div className="row">
                       <span className="row__key">Amount</span>
-                      <span className="row__val text-bold" style={{ color: "var(--brand-primary)" }}>
+                      <span
+                        className="row__val text-bold"
+                        style={{ color: "var(--brand-primary)" }}
+                      >
                         ₹{(e.totalAmount || 0).toLocaleString()}
                       </span>
                     </div>
@@ -369,11 +552,13 @@ function App() {
                   <div className="entry-card__footer">
                     <div className="actions" style={{ marginBottom: "10px" }}>
                       {e.status === "Active" && (
-                        <button className="btn btn-success btn--sm" onClick={() => markComplete(e._id)}>
+                        <button
+                          className="btn btn-success btn--sm"
+                          onClick={() => markComplete(e._id)}
+                        >
                           Mark Complete
                         </button>
                       )}
-                      {/* Upload Aadhar */}
                       <button
                         className="btn btn-secondary btn--sm"
                         disabled={uploadingId === e._id}
@@ -386,10 +571,8 @@ function App() {
                         id={`aadhar-${e._id}`}
                         style={{ display: "none" }}
                         accept="image/*,application/pdf"
-                        capture="environment"
                         onChange={(ev) => handleUpload(ev, e._id, "aadhar")}
                       />
-                      {/* Upload License */}
                       <button
                         className="btn btn-secondary btn--sm"
                         disabled={uploadingId === e._id}
@@ -402,7 +585,6 @@ function App() {
                         id={`license-${e._id}`}
                         style={{ display: "none" }}
                         accept="image/*,application/pdf"
-                        capture="environment"
                         onChange={(ev) => handleUpload(ev, e._id, "license")}
                       />
                     </div>
@@ -413,14 +595,18 @@ function App() {
                           <span className="doc-icon">ID</span> View Aadhar
                         </button>
                       ) : (
-                        <span className="text-sm text-muted" style={{ padding: "4px 0" }}>No Aadhar uploaded</span>
+                        <span className="text-sm text-muted" style={{ padding: "4px 0" }}>
+                          No Aadhar uploaded
+                        </span>
                       )}
                       {e.license ? (
                         <button className="btn btn--sm" onClick={() => openPreview(e.license)}>
                           <span className="doc-icon">DL</span> View License
                         </button>
                       ) : (
-                        <span className="text-sm text-muted" style={{ padding: "4px 0" }}>No License uploaded</span>
+                        <span className="text-sm text-muted" style={{ padding: "4px 0" }}>
+                          No License uploaded
+                        </span>
                       )}
                     </div>
                   </div>
@@ -438,21 +624,31 @@ function App() {
         <div className="modal-overlay" onClick={closePreview}>
           <div className="modal-content" onClick={(ev) => ev.stopPropagation()}>
             <span className="modal-handle" />
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+            <div style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: "16px",
+            }}>
               <span className="modal-title">Document Preview</span>
               <button className="modal-close" onClick={closePreview}>✕</button>
             </div>
             <div className="image-container">
               <img src={previewImage} alt="Document Preview" />
             </div>
-            <a
+            
               href={previewImage}
               download
               className="btn btn-primary"
-              style={{ marginTop: "14px", display: "flex", justifyContent: "center", textDecoration: "none" }}
-            >
+              style={{
+                marginTop: "14px",
+                display: "flex",
+                justifyContent: "center",
+                textDecoration: "none",
+              }}
+            
               Download
-            </a>
+         
           </div>
         </div>
       )}
