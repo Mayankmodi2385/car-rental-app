@@ -199,7 +199,7 @@ function App() {
     }
   };
 
-
+  const handleUpload = async (event, id, typeFile) => {
     const file = event.target.files[0];
     const formData = new FormData();
     if (file) formData.append(typeFile, file);
@@ -703,6 +703,6 @@ function App() {
       )}
     </>
   );
-
+}
 
 export default App;
