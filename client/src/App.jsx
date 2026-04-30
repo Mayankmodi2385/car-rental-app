@@ -1,11 +1,19 @@
 import Login from "./Login";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import "./App.css";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 
 const API = import.meta.env.VITE_API_URL || "https://car-rental-app-sdp6.onrender.com";
+const CACHE_KEY = "drivekhata_entries_cache";
+
+// ── Keep Render server warm — ping every 14 min to prevent cold start ──
+function keepServerWarm() {
+  const ping = () => fetch(`${API}/`).catch(() => {});
+  ping(); // ping immediately on app open
+  setInterval(ping, 14 * 60 * 1000);
+}
 
 function App() {
   const [form, setForm] = useState({
@@ -17,7 +25,16 @@ function App() {
     pricePerDay: "",
   });
 
-  const [entries, setEntries] = useState([]);
+  // ── Load cached entries immediately from localStorage (zero wait) ──
+  const [entries, setEntries] = useState(() => {
+    try {
+      const cached = localStorage.getItem(CACHE_KEY);
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  });
+
   const [filterCar, setFilterCar] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("newest");
@@ -30,9 +47,12 @@ function App() {
   const [showIosHint, setShowIosHint] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
   const [showCarManager, setShowCarManager] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
   const [cars, setCars] = useState(() => {
     const saved = localStorage.getItem("drivekhata_cars");
-    return saved ? JSON.parse(saved) : ["Baleno", "Nexon", "Altroz", "Swift Dzire", "Swift Automatic", "Creta"];
+    return saved
+      ? JSON.parse(saved)
+      : ["Baleno", "Nexon", "Altroz", "Swift Dzire", "Swift Automatic", "Creta"];
   });
   const [newCarName, setNewCarName] = useState("");
 
@@ -46,19 +66,25 @@ function App() {
 
   const logout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem(CACHE_KEY);
     setToken(null);
   };
 
-  const fetchEntries = async () => {
+  // silent=true → no loading spinner, used for background refresh
+  const fetchEntries = async (silent = false) => {
     try {
+      if (!silent) setIsSyncing(true);
       const res = await axios.get(`${API}/entries`, { headers: authHeader() });
       setEntries(res.data);
+      localStorage.setItem(CACHE_KEY, JSON.stringify(res.data));
     } catch {
-      showMessage("Failed to load data", "error");
+      if (!silent) showMessage("Failed to load data", "error");
+    } finally {
+      setIsSyncing(false);
     }
   };
 
-  // Auto-detect overdue entries
+  // Auto-detect overdue on the fly (no backend call needed)
   const computedEntries = entries.map((e) => {
     if (e.status === "Active" && new Date(e.endDate) < new Date()) {
       return { ...e, status: "Overdue" };
@@ -67,7 +93,11 @@ function App() {
   });
 
   useEffect(() => {
-    if (token) fetchEntries();
+    if (token) {
+      keepServerWarm();
+      // UI already shows cached data instantly — fetch fresh in background
+      fetchEntries(true);
+    }
   }, []);
 
   useEffect(() => {
@@ -89,10 +119,7 @@ function App() {
   const addCar = () => {
     const name = newCarName.trim();
     if (!name) return;
-    if (cars.includes(name)) {
-      showMessage("Car already exists", "error");
-      return;
-    }
+    if (cars.includes(name)) { showMessage("Car already exists", "error"); return; }
     saveCars([...cars, name]);
     setNewCarName("");
     showMessage(`${name} added`, "success");
@@ -103,9 +130,7 @@ function App() {
     showMessage(`${name} removed`, "success");
   };
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -236,7 +261,14 @@ function App() {
               <span className="l7">h</span><span className="l8">a</span>
               <span className="l9">t</span><span className="l10">a</span>
             </div>
-            <span className="logo-sub">Car Rental</span>
+            <span className="logo-sub">
+              Car Rental
+              {isSyncing && (
+                <span style={{ marginLeft: 6, fontSize: 10, color: "#a78bfa", fontWeight: 600 }}>
+                  ↻
+                </span>
+              )}
+            </span>
           </div>
         </div>
         <div className="header-actions">
@@ -251,7 +283,7 @@ function App() {
         </div>
       </header>
 
-      {/* iOS INSTALL HINT BANNER */}
+      {/* iOS INSTALL HINT */}
       {showIosHint && (
         <div style={{
           position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 500,
@@ -261,14 +293,14 @@ function App() {
         }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <div style={{ width: 46, height: 46, background: "linear-gradient(135deg, #7c3aed, #4f46e5)", borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 900, fontSize: 22, flexShrink: 0, boxShadow: "0 4px 12px rgba(124,58,237,0.3)" }}>D</div>
+              <div style={{ width: 46, height: 46, background: "linear-gradient(135deg, #7c3aed, #4f46e5)", borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 900, fontSize: 22, flexShrink: 0 }}>D</div>
               <div>
                 <div style={{ fontWeight: 800, fontSize: 16, color: "#1e1b4b" }}>Install DriveKhata</div>
                 <div style={{ fontSize: 12, color: "#9ca3af", marginTop: 2, fontWeight: 500 }}>Add to your iPhone home screen</div>
               </div>
             </div>
             <button onClick={() => { localStorage.setItem("iosHintDismissed", "true"); setShowIosHint(false); }}
-              style={{ background: "#f5f3ff", border: "1px solid #ddd6fe", borderRadius: "50%", width: 32, height: 32, fontSize: 16, color: "#7c3aed", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontWeight: 700 }}>✕</button>
+              style={{ background: "#f5f3ff", border: "1px solid #ddd6fe", borderRadius: "50%", width: 32, height: 32, fontSize: 16, color: "#7c3aed", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700 }}>✕</button>
           </div>
           <div style={{ background: "#f5f3ff", borderRadius: 12, padding: "14px 16px", border: "1.5px solid #ddd6fe" }}>
             <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 10 }}>
@@ -307,41 +339,18 @@ function App() {
               <span className="modal-title">🚗 Manage Cars</span>
               <button className="modal-close" onClick={() => setShowCarManager(false)}>✕</button>
             </div>
-
-            {/* Add car */}
             <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
-              <input
-                type="text"
-                placeholder="New car name (e.g. Ertiga)"
-                value={newCarName}
+              <input type="text" placeholder="New car name (e.g. Ertiga)" value={newCarName}
                 onChange={(e) => setNewCarName(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && addCar()}
-                style={{ flex: 1, marginBottom: 0 }}
-              />
-              <button
-                className="btn btn-success btn--sm"
-                style={{ whiteSpace: "nowrap", padding: "10px 16px", fontWeight: 800 }}
-                onClick={addCar}
-              >
-                + Add
-              </button>
+                style={{ flex: 1, marginBottom: 0 }} />
+              <button className="btn btn-success btn--sm" style={{ whiteSpace: "nowrap", padding: "10px 16px", fontWeight: 800 }} onClick={addCar}>+ Add</button>
             </div>
-
-            {/* Car list */}
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {cars.map((car) => (
-                <div key={car} style={{
-                  display: "flex", justifyContent: "space-between", alignItems: "center",
-                  background: "#f5f3ff", border: "1.5px solid #ddd6fe", borderRadius: 10,
-                  padding: "10px 14px",
-                }}>
+                <div key={car} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#f5f3ff", border: "1.5px solid #ddd6fe", borderRadius: 10, padding: "10px 14px" }}>
                   <span style={{ fontWeight: 700, color: "#1e1b4b", fontSize: 15 }}>🚙 {car}</span>
-                  <button
-                    onClick={() => removeCar(car)}
-                    style={{ background: "#fef2f2", color: "#dc2626", border: "1.5px solid #fecaca", borderRadius: 8, padding: "5px 12px", fontWeight: 800, fontSize: 13, cursor: "pointer" }}
-                  >
-                    Remove
-                  </button>
+                  <button onClick={() => removeCar(car)} style={{ background: "#fef2f2", color: "#dc2626", border: "1.5px solid #fecaca", borderRadius: 8, padding: "5px 12px", fontWeight: 800, fontSize: 13, cursor: "pointer" }}>Remove</button>
                 </div>
               ))}
             </div>
@@ -359,20 +368,8 @@ function App() {
               <div style={{ fontSize: 20, fontWeight: 900, color: "#1e1b4b", marginBottom: 8 }}>Delete Entry?</div>
               <div style={{ fontSize: 14, color: "#9ca3af", marginBottom: 24 }}>This action cannot be undone.</div>
               <div style={{ display: "flex", gap: 10 }}>
-                <button
-                  className="btn btn-secondary"
-                  style={{ flex: 1 }}
-                  onClick={() => setDeleteConfirmId(null)}
-                >
-                  Cancel
-                </button>
-                <button
-                  className="btn"
-                  style={{ flex: 1, background: "#dc2626", color: "#fff", border: "none", fontWeight: 800 }}
-                  onClick={() => deleteEntry(deleteConfirmId)}
-                >
-                  Delete
-                </button>
+                <button className="btn btn-secondary" style={{ flex: 1 }} onClick={() => setDeleteConfirmId(null)}>Cancel</button>
+                <button className="btn" style={{ flex: 1, background: "#dc2626", color: "#fff", border: "none", fontWeight: 800 }} onClick={() => deleteEntry(deleteConfirmId)}>Delete</button>
               </div>
             </div>
           </div>
@@ -405,40 +402,23 @@ function App() {
 
           {/* FILTER + SEARCH + SORT + EXPORT */}
           <div className="card" style={{ marginBottom: "16px" }}>
-            {/* Search bar */}
             <div style={{ marginBottom: 10 }}>
-              <input
-                type="search"
-                placeholder="🔍  Search by customer name or car..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                style={{ marginBottom: 0 }}
-              />
+              <input type="search" placeholder="🔍  Search by customer name or car..."
+                value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+                style={{ marginBottom: 0 }} />
             </div>
             <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
-              <select
-                style={{ flex: 1, marginBottom: 0, minWidth: 120 }}
-                value={filterCar}
-                onChange={(e) => setFilterCar(e.target.value)}
-              >
+              <select style={{ flex: 1, marginBottom: 0, minWidth: 120 }} value={filterCar} onChange={(e) => setFilterCar(e.target.value)}>
                 <option value="">All Cars</option>
                 {cars.map((c) => <option key={c}>{c}</option>)}
               </select>
-              <select
-                style={{ flex: 1, marginBottom: 0, minWidth: 120 }}
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-              >
+              <select style={{ flex: 1, marginBottom: 0, minWidth: 120 }} value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
                 <option value="newest">Newest First</option>
                 <option value="oldest">Oldest First</option>
                 <option value="amount_high">Amount: High → Low</option>
                 <option value="amount_low">Amount: Low → High</option>
               </select>
-              <button
-                className="btn btn-secondary"
-                style={{ width: "auto", whiteSpace: "nowrap", padding: "9px 14px" }}
-                onClick={exportToExcel}
-              >
+              <button className="btn btn-secondary" style={{ width: "auto", whiteSpace: "nowrap", padding: "9px 14px" }} onClick={exportToExcel}>
                 Export Excel
               </button>
             </div>
@@ -450,18 +430,10 @@ function App() {
           </div>
           <div className="card" style={{ marginBottom: "20px" }}>
             <form onSubmit={handleSubmit} className="form">
-
               <div className="form-group">
                 <label className="form-label">Customer Name *</label>
-                <input
-                  type="text"
-                  name="customerName"
-                  placeholder="e.g. Rahul Sharma"
-                  value={form.customerName}
-                  onChange={handleChange}
-                />
+                <input type="text" name="customerName" placeholder="e.g. Rahul Sharma" value={form.customerName} onChange={handleChange} />
               </div>
-
               <div className="form-group">
                 <label className="form-label">Car *</label>
                 <select name="carName" value={form.carName} onChange={handleChange}>
@@ -469,7 +441,6 @@ function App() {
                   {cars.map((c) => <option key={c}>{c}</option>)}
                 </select>
               </div>
-
               <div className="form-row">
                 <div className="form-group">
                   <label className="form-label">Start Date *</label>
@@ -480,17 +451,14 @@ function App() {
                   <input type="time" name="startTime" value={form.startTime} onChange={handleChange} style={{ colorScheme: "light" }} />
                 </div>
               </div>
-
               <div className="form-group">
                 <label className="form-label">End Date *</label>
                 <input type="date" name="endDate" value={form.endDate} onChange={handleChange} style={{ colorScheme: "light" }} />
               </div>
-
               <div className="form-group">
                 <label className="form-label">Price Per Day (₹)</label>
                 <input type="number" name="pricePerDay" placeholder="e.g. 1200" value={form.pricePerDay} onChange={handleChange} />
               </div>
-
               <button type="submit" disabled={loading}>
                 {loading ? "Adding..." : "Add Entry"}
               </button>
@@ -527,13 +495,8 @@ function App() {
                     </div>
                     <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
                       <span className={getBadgeClass(e.status)}>{e.status}</span>
-                      <button
-                        onClick={() => setDeleteConfirmId(e._id)}
-                        style={{ background: "none", border: "none", cursor: "pointer", color: "#dc2626", fontSize: 18, padding: "0 2px", lineHeight: 1 }}
-                        title="Delete entry"
-                      >
-                        🗑
-                      </button>
+                      <button onClick={() => setDeleteConfirmId(e._id)}
+                        style={{ background: "none", border: "none", cursor: "pointer", color: "#dc2626", fontSize: 18, padding: "0 2px", lineHeight: 1 }}>🗑</button>
                     </div>
                   </div>
 
@@ -551,55 +514,38 @@ function App() {
                     </div>
                     <div className="row">
                       <span className="row__key">End</span>
-                      <span className="row__val">
-                        {new Date(e.endDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
-                      </span>
+                      <span className="row__val">{new Date(e.endDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</span>
                     </div>
                     <div className="row">
                       <span className="row__key">Amount</span>
-                      <span className="row__val text-bold" style={{ color: "var(--brand-primary)" }}>
-                        ₹{(e.totalAmount || 0).toLocaleString()}
-                      </span>
+                      <span className="row__val text-bold" style={{ color: "var(--brand-primary)" }}>₹{(e.totalAmount || 0).toLocaleString()}</span>
                     </div>
                   </div>
 
                   <div className="entry-card__footer">
                     <div className="actions" style={{ marginBottom: "10px" }}>
                       {(e.status === "Active" || e.status === "Overdue") && (
-                        <button className="btn btn-success btn--sm" onClick={() => markComplete(e._id)}>
-                          Mark Complete
-                        </button>
+                        <button className="btn btn-success btn--sm" onClick={() => markComplete(e._id)}>Mark Complete</button>
                       )}
-                      <button
-                        className="btn btn-secondary btn--sm"
-                        disabled={uploadingId === e._id}
-                        onClick={() => document.getElementById(`aadhar-${e._id}`).click()}
-                      >
+                      <button className="btn btn-secondary btn--sm" disabled={uploadingId === e._id}
+                        onClick={() => document.getElementById(`aadhar-${e._id}`).click()}>
                         {uploadingId === e._id ? "Uploading..." : "Upload Aadhar"}
                       </button>
                       <input type="file" id={`aadhar-${e._id}`} style={{ display: "none" }} accept="image/*,application/pdf" onChange={(ev) => handleUpload(ev, e._id, "aadhar")} />
-                      <button
-                        className="btn btn-secondary btn--sm"
-                        disabled={uploadingId === e._id}
-                        onClick={() => document.getElementById(`license-${e._id}`).click()}
-                      >
+                      <button className="btn btn-secondary btn--sm" disabled={uploadingId === e._id}
+                        onClick={() => document.getElementById(`license-${e._id}`).click()}>
                         {uploadingId === e._id ? "Uploading..." : "Upload License"}
                       </button>
                       <input type="file" id={`license-${e._id}`} style={{ display: "none" }} accept="image/*,application/pdf" onChange={(ev) => handleUpload(ev, e._id, "license")} />
                     </div>
-
                     <div className="docs">
                       {e.aadhar ? (
-                        <button className="btn btn--sm" onClick={() => openPreview(e.aadhar)}>
-                          <span className="doc-icon">ID</span> View Aadhar
-                        </button>
+                        <button className="btn btn--sm" onClick={() => openPreview(e.aadhar)}><span className="doc-icon">ID</span> View Aadhar</button>
                       ) : (
                         <span className="text-sm text-muted" style={{ padding: "4px 0" }}>No Aadhar uploaded</span>
                       )}
                       {e.license ? (
-                        <button className="btn btn--sm" onClick={() => openPreview(e.license)}>
-                          <span className="doc-icon">DL</span> View License
-                        </button>
+                        <button className="btn btn--sm" onClick={() => openPreview(e.license)}><span className="doc-icon">DL</span> View License</button>
                       ) : (
                         <span className="text-sm text-muted" style={{ padding: "4px 0" }}>No License uploaded</span>
                       )}
@@ -609,7 +555,6 @@ function App() {
               ))}
             </div>
           )}
-
         </div>
       </div>
 
@@ -625,12 +570,8 @@ function App() {
             <div className="image-container">
               <img src={previewImage} alt="Document Preview" />
             </div>
-            <a
-              href={previewImage}
-              download
-              className="btn btn-primary"
-              style={{ marginTop: "14px", display: "flex", justifyContent: "center", textDecoration: "none" }}
-            >
+            <a href={previewImage} download className="btn btn-primary"
+              style={{ marginTop: "14px", display: "flex", justifyContent: "center", textDecoration: "none" }}>
               Download
             </a>
           </div>

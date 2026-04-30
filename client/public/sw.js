@@ -1,62 +1,80 @@
-const CACHE_NAME = "drivekhata-v1";
+const CACHE_NAME = "drivekhata-v3";
+const DATA_CACHE = "drivekhata-data-v3";
+const API_ORIGIN = "https://car-rental-app-sdp6.onrender.com";
 
-// Files to cache for offline use
 const STATIC_ASSETS = [
   "/",
   "/index.html",
   "/manifest.json",
-  "/icon.png",
+  "/icon-192.png",
 ];
 
-// Install — cache static assets
+// ── INSTALL ──────────────────────────────────────────
 self.addEventListener("install", (event) => {
-  console.log("[SW] Installing DriveKhata Service Worker...");
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(STATIC_ASSETS);
-    })
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS))
   );
-  // Activate immediately without waiting
   self.skipWaiting();
 });
 
-// Activate — clean up old caches
+// ── ACTIVATE ─────────────────────────────────────────
 self.addEventListener("activate", (event) => {
-  console.log("[SW] Activating...");
   event.waitUntil(
     caches.keys().then((keys) =>
       Promise.all(
-        keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
+        keys
+          .filter((k) => k !== CACHE_NAME && k !== DATA_CACHE)
+          .map((k) => caches.delete(k))
       )
     )
   );
-  // Take control of all clients immediately
   self.clients.claim();
 });
 
-// Fetch — network first, fallback to cache
+// ── FETCH ─────────────────────────────────────────────
 self.addEventListener("fetch", (event) => {
-  // Skip non-GET and cross-origin API requests
   if (event.request.method !== "GET") return;
-  if (event.request.url.includes("onrender.com")) return;
 
+  const url = event.request.url;
+
+  // ── API requests: stale-while-revalidate ──
+  // Return cached data INSTANTLY, update cache in background silently
+  if (url.includes(API_ORIGIN)) {
+    event.respondWith(
+      caches.open(DATA_CACHE).then(async (cache) => {
+        const cached = await cache.match(event.request);
+
+        const fetchPromise = fetch(event.request)
+          .then((networkRes) => {
+            if (networkRes && networkRes.status === 200) {
+              cache.put(event.request, networkRes.clone());
+            }
+            return networkRes;
+          })
+          .catch(() => null);
+
+        // If we have cached data, return it immediately
+        // Fresh fetch happens in background and updates cache for NEXT open
+        return cached || fetchPromise;
+      })
+    );
+    return;
+  }
+
+  // ── Static assets: cache first, fallback to network ──
   event.respondWith(
-    fetch(event.request)
-      .then((response) => {
-        // Cache fresh responses for static assets
-        if (response && response.status === 200) {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, clone);
-          });
-        }
-        return response;
-      })
-      .catch(() => {
-        // Fallback to cache when offline
-        return caches.match(event.request).then((cached) => {
-          return cached || caches.match("/index.html");
-        });
-      })
+    caches.match(event.request).then(
+      (cached) =>
+        cached ||
+        fetch(event.request)
+          .then((res) => {
+            if (res && res.status === 200) {
+              const clone = res.clone();
+              caches.open(CACHE_NAME).then((c) => c.put(event.request, clone));
+            }
+            return res;
+          })
+          .catch(() => caches.match("/index.html"))
+    )
   );
 });
