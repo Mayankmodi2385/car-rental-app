@@ -36,7 +36,7 @@ router.post(
   ]),
   async (req, res) => {
     try {
-      const { customerName, carName, startDate, startTime, endDate, pricePerDay } = req.body;
+      const { customerName, carName, startDate, startTime, endDate, pricePerDay, remark } = req.body;
 
       const start = new Date(startDate);
       const end = new Date(endDate);
@@ -55,6 +55,7 @@ router.post(
         pricePerDay: price,
         totalAmount,
         status: "Active",
+        remark: remark || "",
         aadhar: req.files?.aadhar?.[0]?.path || null,
         license: req.files?.license?.[0]?.path || null,
       });
@@ -122,6 +123,33 @@ router.put(
     }
   }
 );
+
+/* ===========================
+   EDIT ENTRY (PROTECTED)
+=========================== */
+router.patch("/:id", auth, async (req, res) => {
+  try {
+    const { customerName, carName, startDate, startTime, endDate, pricePerDay, remark } = req.body;
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const days = Math.max(1, Math.ceil((end - start) / (1000 * 60 * 60 * 24)));
+    const price = parseFloat(pricePerDay) || 0;
+    const totalAmount = days * price;
+
+    const updated = await Entry.findByIdAndUpdate(
+      req.params.id,
+      { customerName, carName, startDate: start, startTime, endDate: end, pricePerDay: price, totalAmount, remark: remark || "" },
+      { new: true }
+    );
+
+    if (!updated) return res.status(404).json({ message: "Entry not found" });
+    res.json(updated);
+  } catch (err) {
+    console.error("EDIT ERROR:", err);
+    res.status(500).json({ message: "Error editing entry" });
+  }
+});
 
 /* ===========================
    MARK COMPLETE (PROTECTED)

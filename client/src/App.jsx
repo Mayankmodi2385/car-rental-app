@@ -23,6 +23,7 @@ function App() {
     startTime: "",
     endDate: "",
     pricePerDay: "",
+    remark: "",
   });
 
   // ── Load cached entries immediately from localStorage (zero wait) ──
@@ -48,6 +49,8 @@ function App() {
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
   const [showCarManager, setShowCarManager] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [editEntry, setEditEntry] = useState(null); // holds entry being edited
+  const [editForm, setEditForm] = useState({});
   const [cars, setCars] = useState(() => {
     const saved = localStorage.getItem("drivekhata_cars");
     return saved
@@ -141,7 +144,7 @@ function App() {
     try {
       setLoading(true);
       await axios.post(`${API}/entries`, form, { headers: authHeader() });
-      setForm({ customerName: "", carName: "", startDate: "", startTime: "", endDate: "", pricePerDay: "" });
+      setForm({ customerName: "", carName: "", startDate: "", startTime: "", endDate: "", pricePerDay: "", remark: "" });
       showMessage("Entry added successfully", "success");
       fetchEntries();
     } catch {
@@ -172,7 +175,31 @@ function App() {
     }
   };
 
-  const handleUpload = async (event, id, typeFile) => {
+  const openEdit = (entry) => {
+    setEditEntry(entry);
+    setEditForm({
+      customerName: entry.customerName || "",
+      carName: entry.carName || "",
+      startDate: entry.startDate ? entry.startDate.slice(0, 10) : "",
+      startTime: entry.startTime || "",
+      endDate: entry.endDate ? entry.endDate.slice(0, 10) : "",
+      pricePerDay: entry.pricePerDay || "",
+      remark: entry.remark || "",
+    });
+  };
+
+  const saveEdit = async () => {
+    try {
+      await axios.patch(`${API}/entries/${editEntry._id}`, editForm, { headers: authHeader() });
+      setEditEntry(null);
+      showMessage("Entry updated", "success");
+      fetchEntries();
+    } catch {
+      showMessage("Error updating entry", "error");
+    }
+  };
+
+
     const file = event.target.files[0];
     const formData = new FormData();
     if (file) formData.append(typeFile, file);
@@ -459,6 +486,17 @@ function App() {
                 <label className="form-label">Price Per Day (₹)</label>
                 <input type="number" name="pricePerDay" placeholder="e.g. 1200" value={form.pricePerDay} onChange={handleChange} />
               </div>
+              <div className="form-group">
+                <label className="form-label">Remark</label>
+                <textarea
+                  name="remark"
+                  placeholder="e.g. Advance paid ₹500, petrol full, minor scratch on door..."
+                  value={form.remark}
+                  onChange={handleChange}
+                  rows={2}
+                  style={{ resize: "vertical", minHeight: 60 }}
+                />
+              </div>
               <button type="submit" disabled={loading}>
                 {loading ? "Adding..." : "Add Entry"}
               </button>
@@ -496,7 +534,13 @@ function App() {
                     <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
                       <span className={getBadgeClass(e.status)}>{e.status}</span>
                       <button onClick={() => setDeleteConfirmId(e._id)}
-                        style={{ background: "none", border: "none", cursor: "pointer", color: "#dc2626", fontSize: 18, padding: "0 2px", lineHeight: 1 }}>🗑</button>
+                        style={{
+                          background: "#fff", border: "1.5px solid #fecaca", borderRadius: 8,
+                          color: "#dc2626", fontSize: 12, fontWeight: 800, padding: "4px 10px",
+                          cursor: "pointer", letterSpacing: 0.2
+                        }}>
+                        Delete
+                      </button>
                     </div>
                   </div>
 
@@ -520,6 +564,12 @@ function App() {
                       <span className="row__key">Amount</span>
                       <span className="row__val text-bold" style={{ color: "var(--brand-primary)" }}>₹{(e.totalAmount || 0).toLocaleString()}</span>
                     </div>
+                    {e.remark && (
+                      <div className="row" style={{ alignItems: "flex-start" }}>
+                        <span className="row__key">Remark</span>
+                        <span className="row__val" style={{ color: "#6b7280", fontSize: 13, lineHeight: 1.5 }}>{e.remark}</span>
+                      </div>
+                    )}
                   </div>
 
                   <div className="entry-card__footer">
@@ -527,6 +577,13 @@ function App() {
                       {(e.status === "Active" || e.status === "Overdue") && (
                         <button className="btn btn-success btn--sm" onClick={() => markComplete(e._id)}>Mark Complete</button>
                       )}
+                      <button
+                        className="btn btn--sm"
+                        style={{ background: "#ede9fe", color: "#7c3aed", border: "1.5px solid #ddd6fe", fontWeight: 800 }}
+                        onClick={() => openEdit(e)}
+                      >
+                        ✏️ Edit
+                      </button>
                       <button className="btn btn-secondary btn--sm" disabled={uploadingId === e._id}
                         onClick={() => document.getElementById(`aadhar-${e._id}`).click()}>
                         {uploadingId === e._id ? "Uploading..." : "Upload Aadhar"}
@@ -558,6 +615,73 @@ function App() {
         </div>
       </div>
 
+      {/* EDIT ENTRY MODAL */}
+      {editEntry && (
+        <div className="modal-overlay" onClick={() => setEditEntry(null)}>
+          <div className="modal-content" style={{ maxWidth: 460 }} onClick={(ev) => ev.stopPropagation()}>
+            <span className="modal-handle" />
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+              <span className="modal-title">✏️ Edit Entry</span>
+              <button className="modal-close" onClick={() => setEditEntry(null)}>✕</button>
+            </div>
+
+            <div className="form">
+              <div className="form-group">
+                <label className="form-label">Customer Name</label>
+                <input type="text" value={editForm.customerName}
+                  onChange={(e) => setEditForm({ ...editForm, customerName: e.target.value })} />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Car</label>
+                <select value={editForm.carName} onChange={(e) => setEditForm({ ...editForm, carName: e.target.value })}>
+                  <option value="">Select Car</option>
+                  {cars.map((c) => <option key={c}>{c}</option>)}
+                </select>
+              </div>
+              <div className="form-row">
+                <div className="form-group">
+                  <label className="form-label">Start Date</label>
+                  <input type="date" value={editForm.startDate}
+                    onChange={(e) => setEditForm({ ...editForm, startDate: e.target.value })}
+                    style={{ colorScheme: "light" }} />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Start Time</label>
+                  <input type="time" value={editForm.startTime}
+                    onChange={(e) => setEditForm({ ...editForm, startTime: e.target.value })}
+                    style={{ colorScheme: "light" }} />
+                </div>
+              </div>
+              <div className="form-group">
+                <label className="form-label">End Date</label>
+                <input type="date" value={editForm.endDate}
+                  onChange={(e) => setEditForm({ ...editForm, endDate: e.target.value })}
+                  style={{ colorScheme: "light" }} />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Price Per Day (₹)</label>
+                <input type="number" value={editForm.pricePerDay}
+                  onChange={(e) => setEditForm({ ...editForm, pricePerDay: e.target.value })} />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Remark</label>
+                <textarea
+                  value={editForm.remark}
+                  onChange={(e) => setEditForm({ ...editForm, remark: e.target.value })}
+                  rows={2}
+                  placeholder="e.g. Advance paid ₹500, petrol full..."
+                  style={{ resize: "vertical", minHeight: 60 }}
+                />
+              </div>
+              <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
+                <button className="btn btn-secondary" style={{ flex: 1 }} onClick={() => setEditEntry(null)}>Cancel</button>
+                <button className="btn" style={{ flex: 1, fontWeight: 800 }} onClick={saveEdit}>Save Changes</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* IMAGE PREVIEW MODAL */}
       {previewImage && (
         <div className="modal-overlay" onClick={closePreview}>
@@ -579,6 +703,6 @@ function App() {
       )}
     </>
   );
-}
+
 
 export default App;
