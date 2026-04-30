@@ -1,5 +1,5 @@
-const CACHE_NAME = "drivekhata-v3";
-const DATA_CACHE = "drivekhata-data-v3";
+const CACHE_NAME = "drivekhata-v4";
+const DATA_CACHE = "drivekhata-data-v4";
 const API_ORIGIN = "https://car-rental-app-sdp6.onrender.com";
 
 const STATIC_ASSETS = [

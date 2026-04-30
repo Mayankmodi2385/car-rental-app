@@ -95,13 +95,38 @@ function App() {
     return e;
   });
 
-  useEffect(() => {
-    if (token) {
-      keepServerWarm();
-      // UI already shows cached data instantly — fetch fresh in background
-      fetchEntries(true);
-    }
-  }, []);
+ useEffect(() => {
+  if (token) {
+    keepServerWarm();
+    fetchEntries(true);
+  }
+
+  // 🔥 AUTO UPDATE SERVICE WORKER
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("/service-worker.js").then((reg) => {
+
+      // check for updates on load
+      reg.update();
+
+      reg.onupdatefound = () => {
+        const newWorker = reg.installing;
+
+        if (newWorker) {
+          newWorker.onstatechange = () => {
+            if (newWorker.state === "installed") {
+              if (navigator.serviceWorker.controller) {
+                console.log("🔥 New version available");
+
+                // 💥 force reload so user gets latest UI
+                window.location.reload();
+              }
+            }
+          };
+        }
+      };
+    });
+  }
+}, []);
 
   useEffect(() => {
     const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
