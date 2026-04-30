@@ -36,9 +36,8 @@ router.post(
   ]),
   async (req, res) => {
     try {
-      const { carName, startDate, startTime, endDate, pricePerDay } = req.body;
+      const { customerName, carName, startDate, startTime, endDate, pricePerDay } = req.body;
 
-      // ✅ FIX: minimum 1 day, handle same-day rentals
       const start = new Date(startDate);
       const end = new Date(endDate);
       const diffMs = end - start;
@@ -48,6 +47,7 @@ router.post(
       const totalAmount = days * price;
 
       const entry = await Entry.create({
+        customerName: customerName || "",
         carName,
         startDate: start,
         startTime: startTime || "",
@@ -81,29 +81,8 @@ router.get("/", auth, async (req, res) => {
 });
 
 /* ===========================
-   MARK COMPLETE (PROTECTED)
-=========================== */
-router.put("/:id", auth, async (req, res) => {
-  try {
-    // ✅ FIX: don't conflict with /upload/:id — this handles status only
-    const updated = await Entry.findByIdAndUpdate(
-      req.params.id,
-      { status: "Completed" },
-      { new: true }
-    );
-
-    if (!updated) return res.status(404).json({ message: "Entry not found" });
-
-    res.json(updated);
-  } catch (err) {
-    console.error("STATUS ERROR:", err);
-    res.status(500).json({ message: "Error updating status" });
-  }
-});
-
-/* ===========================
    UPLOAD DOCUMENTS (PROTECTED)
-   ✅ FIX: must come BEFORE /:id to avoid route conflict
+   ✅ Must come BEFORE /:id to avoid route conflict
 =========================== */
 router.put(
   "/upload/:id",
@@ -143,5 +122,41 @@ router.put(
     }
   }
 );
+
+/* ===========================
+   MARK COMPLETE (PROTECTED)
+=========================== */
+router.put("/:id", auth, async (req, res) => {
+  try {
+    const updated = await Entry.findByIdAndUpdate(
+      req.params.id,
+      { status: "Completed" },
+      { new: true }
+    );
+
+    if (!updated) return res.status(404).json({ message: "Entry not found" });
+
+    res.json(updated);
+  } catch (err) {
+    console.error("STATUS ERROR:", err);
+    res.status(500).json({ message: "Error updating status" });
+  }
+});
+
+/* ===========================
+   DELETE ENTRY (PROTECTED)
+=========================== */
+router.delete("/:id", auth, async (req, res) => {
+  try {
+    const deleted = await Entry.findByIdAndDelete(req.params.id);
+
+    if (!deleted) return res.status(404).json({ message: "Entry not found" });
+
+    res.json({ message: "Entry deleted successfully" });
+  } catch (err) {
+    console.error("DELETE ERROR:", err);
+    res.status(500).json({ message: "Error deleting entry" });
+  }
+});
 
 module.exports = router;
