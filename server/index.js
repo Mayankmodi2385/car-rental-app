@@ -6,11 +6,22 @@ const bookingRoutes = require("./routes/bookings");
 const carRoutes = require("./routes/cars");
 const entryRoutes = require("./routes/entries");
 const authRoutes = require("./routes/auth");
-const { router: pushRoutes, runOverdueCron } = require("./routes/push");
+
+// Push notifications — loads only if push.js exists
+let pushRoutes = null;
+let runOverdueCron = null;
+try {
+  const push = require("./routes/push");
+  pushRoutes = push.router;
+  runOverdueCron = push.runOverdueCron;
+  console.log("✅ Push notifications enabled");
+} catch (e) {
+  console.log("ℹ️  Push not configured yet:", e.message);
+}
 
 const app = express();
 
-// ✅ CORS
+// CORS
 app.use(cors({
   origin: [
     "https://car-rental-9dze3otf6-mayankmodi7126-9304s-projects.vercel.app",
@@ -30,7 +41,7 @@ app.use("/auth", authRoutes);
 app.use("/bookings", bookingRoutes);
 app.use("/cars", carRoutes);
 app.use("/entries", entryRoutes);
-app.use("/push", pushRoutes);
+if (pushRoutes) app.use("/push", pushRoutes);
 
 // Health check
 app.get("/", (req, res) => res.json({ status: "DriveKhata API running ✅" }));
@@ -40,14 +51,14 @@ mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
     console.log("✅ MongoDB Connected");
-
     const PORT = process.env.PORT || 5000;
     app.listen(PORT, () => {
       console.log(`✅ Server running on port ${PORT}`);
-
-      // ── Overdue cron: runs every hour ──
-      runOverdueCron(); // run once immediately on startup
-      setInterval(runOverdueCron, 60 * 60 * 1000); // then every hour
+      // Overdue cron every hour — only if push is configured
+      if (runOverdueCron) {
+        runOverdueCron();
+        setInterval(runOverdueCron, 60 * 60 * 1000);
+      }
     });
   })
   .catch((err) => console.log("❌ MongoDB Error:", err));
