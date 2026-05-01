@@ -87,10 +87,14 @@ function App() {
     }
   };
 
-  // Auto-detect overdue on the fly (no backend call needed)
+  // Auto-detect overdue — compare date only (no time), avoids IST/UTC mismatch
   const computedEntries = entries.map((e) => {
-    if (e.status === "Active" && new Date(e.endDate) < new Date()) {
-      return { ...e, status: "Overdue" };
+    if (e.status === "Active") {
+      const endDateStr = new Date(e.endDate).toISOString().slice(0, 10);
+      const todayStr = new Date().toLocaleDateString("en-CA");
+      if (endDateStr < todayStr) {
+        return { ...e, status: "Overdue" };
+      }
     }
     return e;
   });
@@ -215,11 +219,23 @@ function App() {
 
   const saveEdit = async () => {
     try {
-      await axios.patch(`${API}/entries/${editEntry._id}`, editForm, { headers: authHeader() });
+      const payload = {
+        customerName: editForm.customerName,
+        carName: editForm.carName,
+        startDate: editForm.startDate,
+        startTime: editForm.startTime,
+        endDate: editForm.endDate,
+        pricePerDay: editForm.pricePerDay,
+        remark: editForm.remark,
+      };
+      await axios.patch(`${API}/entries/${editEntry._id}`, payload, {
+        headers: { ...authHeader(), "Content-Type": "application/json" },
+      });
       setEditEntry(null);
       showMessage("Entry updated", "success");
       fetchEntries();
-    } catch {
+    } catch (err) {
+      console.error("Edit error:", err?.response?.data || err.message);
       showMessage("Error updating entry", "error");
     }
   };
